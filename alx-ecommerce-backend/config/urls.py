@@ -6,7 +6,6 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-# إعداد Swagger / drf-yasg
 schema_view = get_schema_view(
    openapi.Info(
       title="E-Commerce API",
@@ -20,12 +19,11 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    # إعادة توجيه root إلى Swagger UI
     path('', lambda request: redirect('schema-swagger-ui', permanent=False)),
 
     path('admin/', admin.site.urls),
 
-    # APIs بتاعت المنتجات
+    # APIs 
     path('api/', include('products.urls')),
 
     # Users (signup + profile)
