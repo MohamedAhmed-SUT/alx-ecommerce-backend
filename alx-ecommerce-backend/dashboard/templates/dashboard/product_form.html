@@ -1,0 +1,11 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<h2>{% if form.instance.pk %}✏️ Edit Product{% else %}➕ Add Product{% endif %}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-success">Save</button>
+  <a href="{% url 'products_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<h2>🛒 Orders</h2>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>User</th>
+      <th>Status</th>
+      <th>Created</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for order in orders %}
+    <tr>
+      <td>{{ order.id }}</td>
+      <td>{{ order.user.username }}</td>
+      <td>{{ order.status }}</td>
+      <td>{{ order.created_at }}</td>
+      <td>
+        {% if user.is_staff %}
+        <a href="{% url 'order_update' order.id %}" class="btn btn-sm btn-warning">✏️ Update</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

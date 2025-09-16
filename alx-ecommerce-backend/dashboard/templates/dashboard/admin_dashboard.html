@@ -1,0 +1,87 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<h2>📊 Admin Dashboard</h2>
+
+<!-- Filter Buttons -->
+<div class="mb-3">
+  <a href="?period=all" class="btn btn-outline-dark {% if period == 'all' %}active{% endif %}">All</a>
+  <a href="?period=day" class="btn btn-outline-primary {% if period == 'day' %}active{% endif %}">Today</a>
+  <a href="?period=week" class="btn btn-outline-success {% if period == 'week' %}active{% endif %}">This Week</a>
+  <a href="?period=month" class="btn btn-outline-warning {% if period == 'month' %}active{% endif %}">This Month</a>
+</div>
+
+<div class="row">
+  <div class="col-md-3">
+    <div class="card bg-primary text-white mb-3 text-center">
+      <div class="card-body">
+        <h5>👤 Users</h5>
+        <h3>{{ users_count }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-success text-white mb-3 text-center">
+      <div class="card-body">
+        <h5>📦 Products</h5>
+        <h3>{{ products_count }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-warning text-dark mb-3 text-center">
+      <div class="card-body">
+        <h5>🛒 Orders</h5>
+        <h3>{{ orders_count }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-danger text-white mb-3 text-center">
+      <div class="card-body">
+        <h5>💰 Total Sales</h5>
+        <h3>${{ total_sales }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mt-4">
+  <div class="col-md-6">
+    <canvas id="ordersChart"></canvas>
+  </div>
+  <div class="col-md-6">
+    <canvas id="salesChart"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ordersChart = new Chart(document.getElementById('ordersChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Orders'],
+      datasets: [{
+        label: 'Total Orders',
+        data: [{{ orders_count }}],
+        backgroundColor: 'rgba(255, 206, 86, 0.7)',
+      }]
+    }
+  });
+
+  const salesChart = new Chart(document.getElementById('salesChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Total Sales'],
+      datasets: [{
+        label: 'Sales ($)',
+        data: [{{ total_sales }}, 10000 - {{ total_sales }}],
+        backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(201, 203, 207, 0.3)']
+      }]
+    }
+  });
+</script>
+{% endblock %}

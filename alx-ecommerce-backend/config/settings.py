@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
+    "dashboard",
     # Third-party apps
     'rest_framework',
     'drf_yasg',

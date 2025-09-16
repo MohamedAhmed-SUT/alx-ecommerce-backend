@@ -1,0 +1,51 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="container">
+  <h1 class="mb-4">Welcome to E-Commerce Dashboard</h1>
+
+  <div class="row">
+    <div class="col-md-4">
+      <a href="/dashboard/products/" class="btn btn-primary w-100 mb-3">View Products</a>
+    </div>
+    <div class="col-md-4">
+      <a href="/dashboard/orders/" class="btn btn-success w-100 mb-3">View Orders</a>
+    </div>
+    {% if user.is_staff %}
+    <div class="col-md-4">
+      <a href="/dashboard/admin-dashboard/" class="btn btn-warning w-100 mb-3">Admin Dashboard</a>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if user.is_staff %}
+  <h2 class="mt-5">📊 Site Statistics</h2>
+  <div class="row text-center mt-3">
+    <div class="col-md-3">
+      <div class="card shadow p-3">
+        <h3>{{ stats.users_count }}</h3>
+        <p>Users</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow p-3">
+        <h3>{{ stats.products_count }}</h3>
+        <p>Products</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow p-3">
+        <h3>{{ stats.orders_count }}</h3>
+        <p>Orders</p>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow p-3">
+        <h3>${{ stats.total_sales }}</h3>
+        <p>Total Sales</p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
