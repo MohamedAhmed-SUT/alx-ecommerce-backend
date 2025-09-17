@@ -1,11 +1,10 @@
+# dashboard/urls.py
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Dashboard 
     path('', views.admin_dashboard, name="dashboard_home"),
-    path('admin-dashboard/', views.admin_dashboard, name="admin_dashboard"),  # 👈 هنا
-
+    path('admin-dashboard/', views.admin_dashboard, name="admin_dashboard"),
     # Products CRUD
     path('products/', views.products_list, name="products_list"),
     path('products/add/', views.product_create, name="product_create"),
@@ -14,5 +13,15 @@ urlpatterns = [
 
     # Orders
     path('orders/', views.orders_list, name="orders_list"),
+    path('orders/create/', views.order_create, name="order_create"),
     path('orders/<int:pk>/update/', views.order_update, name="order_update"),
+
+    # Users Management
+    path('users/', views.users_list, name="users_list"),
+    path('users/<int:pk>/role/', views.user_update_role, name="user_update_role"),
+    path('users/<int:pk>/delete/', views.user_delete, name="user_delete"),
+    # Auth
+    path('login/', views.login_view, name="login"),
+    path('logout/', views.logout_view, name="logout"),
+    path('signup/', views.signup_view, name="signup"),
 ]

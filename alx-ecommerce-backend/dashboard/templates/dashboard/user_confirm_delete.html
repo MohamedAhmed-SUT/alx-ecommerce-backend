@@ -1,0 +1,12 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<h2>⚠️ Confirm Delete</h2>
+<p>Are you sure you want to delete user <strong>{{ user.username }}</strong>?</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit">🗑️ Yes, Delete</button>
+    <a href="{% url 'users_list' %}">❌ Cancel</a>
+</form>
+{% endblock %}

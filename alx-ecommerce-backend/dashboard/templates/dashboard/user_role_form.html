@@ -1,0 +1,18 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<h2>✏️ Update Role for {{ user.username }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    <label for="role">Role:</label>
+    <select name="role" id="role">
+        <option value="user" {% if not user.is_staff %}selected{% endif %}>User</option>
+        <option value="admin" {% if user.is_staff %}selected{% endif %}>Admin</option>
+    </select>
+    <br><br>
+    <button type="submit">💾 Save</button>
+</form>
+
+<a href="{% url 'users_list' %}">⬅ Back to Users</a>
+{% endblock %}

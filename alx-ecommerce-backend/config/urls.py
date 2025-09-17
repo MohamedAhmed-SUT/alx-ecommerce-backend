@@ -19,7 +19,8 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('', lambda request: redirect('schema-swagger-ui', permanent=False)),
+    # Dashboard
+    path('', lambda request: redirect('dashboard_home', permanent=False)),
 
     path('admin/', admin.site.urls),
 
@@ -39,6 +40,7 @@ urlpatterns = [
     # Swagger / Redoc URLs
     path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path("dashboard/", include("dashboard.urls")),
 
+    # Dashboard
+    path("dashboard/", include("dashboard.urls")),
 ]

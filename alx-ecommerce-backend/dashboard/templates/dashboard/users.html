@@ -1,0 +1,39 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<h2>👥 Users Management</h2>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+                {% if user.is_staff %}
+                    Admin
+                {% else %}
+                    User
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'user_update_role' user.id %}">✏️ Change Role</a> |
+                <a href="{% url 'user_delete' user.id %}">🗑️ Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'dashboard_home' %}">⬅ Back to Dashboard</a>
+{% endblock %}
