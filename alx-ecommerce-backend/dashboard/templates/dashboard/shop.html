@@ -1,0 +1,23 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<h2>🛍️ Shop</h2>
+
+{% for product in products %}
+<div class="product-card">
+    <h3>{{ product.name }}</h3>
+    <p>Price: ${{ product.price }}</p>
+    <p>Stock: {{ product.stock }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
+        <button type="submit" class="btn btn-primary">Order</button>
+    </form>
+</div>
+<hr>
+{% empty %}
+<p>No products available.</p>
+{% endfor %}
+
+{% endblock %}

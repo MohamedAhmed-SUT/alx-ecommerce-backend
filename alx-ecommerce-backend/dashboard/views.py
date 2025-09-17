@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now, timedelta
 
 from products.models import Product
-from orders.models import Order
+from orders.models import Order, OrderItem
 from .forms import ProductForm, OrderForm
 
 
@@ -18,7 +18,11 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect("dashboard_home")
+            # توجيه حسب نوع المستخدم
+            if user.is_staff:
+                return redirect("dashboard_home")  # لوحة الإدارة للمشرف
+            else:
+                return redirect("shop")  # صفحة التسوق للمستخدم العادي
     else:
         form = AuthenticationForm()
     return render(request, "dashboard/login.html", {"form": form})
@@ -34,12 +38,38 @@ def signup_view(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
             messages.success(request, "✅ Account created successfully! Please log in.")
             return redirect("login")
     else:
         form = UserCreationForm()
     return render(request, "dashboard/signup.html", {"form": form})
+
+
+# ================= Shop View for Users =================
+@login_required
+def shop_view(request):
+    products = Product.objects.filter(stock__gt=0)
+
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
+        quantity = int(request.POST.get("quantity", 1))
+        product = get_object_or_404(Product, id=product_id)
+
+        if quantity > product.stock:
+            messages.error(request, f"Only {product.stock} items available for {product.name}.")
+            return redirect("shop")
+
+        order = Order.objects.create(user=request.user, status="Pending")
+        OrderItem.objects.create(order=order, product=product, quantity=quantity, price=product.price)
+
+        product.stock -= quantity
+        product.save()
+
+        messages.success(request, f"🛒 You ordered {quantity} x {product.name}")
+        return redirect("shop")
+
+    return render(request, "dashboard/shop.html", {"products": products})
 
 
 # ================= Admin Dashboard =================
