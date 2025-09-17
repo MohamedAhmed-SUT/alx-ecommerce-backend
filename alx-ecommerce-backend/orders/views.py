@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Order, OrderItem
 from .serializers import OrderSerializer, OrderItemSerializer
+from carts.models import Cart
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -21,7 +22,6 @@ class CheckoutView(APIView):
     def post(self, request):
         user = request.user
 
-    
         try:
             cart = Cart.objects.get(user=user)
         except Cart.DoesNotExist:
@@ -30,19 +30,21 @@ class CheckoutView(APIView):
         if not cart.items.exists():
             return Response({"error": "Cart has no items"}, status=status.HTTP_400_BAD_REQUEST)
 
-        
-        order = Order.objects.create(user=user, status="pending")
+        # Create Order
+        order = Order.objects.create(user=user, status="Pending")
 
-        
+        # Create OrderItems from CartItems
         for item in cart.items.all():
             OrderItem.objects.create(
                 order=order,
                 product=item.product,
                 quantity=item.quantity,
-                price=item.price
+                price=item.product.price
             )
 
+        # Clear the cart
         cart.items.all().delete()
 
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
