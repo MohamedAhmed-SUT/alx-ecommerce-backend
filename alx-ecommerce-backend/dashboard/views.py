@@ -5,10 +5,20 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.utils.timezone import now, timedelta
-
+from carts.models import Cart, CartItem
 from products.models import Product
 from orders.models import Order, OrderItem
 from .forms import ProductForm, OrderForm
+
+# ================= Cart Views =================
+@login_required
+def cart_page(request):
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    items = cart.items.select_related("product")
+    return render(request, "dashboard/cart.html", {
+        "cart": cart,
+        "items": items,
+    })
 
 
 # ================= Authentication Views =================
@@ -18,11 +28,10 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            # توجيه حسب نوع المستخدم
             if user.is_staff:
-                return redirect("dashboard_home")  # لوحة الإدارة للمشرف
+                return redirect("dashboard_home")
             else:
-                return redirect("shop")  # صفحة التسوق للمستخدم العادي
+                return redirect("shop")
     else:
         form = AuthenticationForm()
     return render(request, "dashboard/login.html", {"form": form})
@@ -60,13 +69,16 @@ def shop_view(request):
             messages.error(request, f"Only {product.stock} items available for {product.name}.")
             return redirect("shop")
 
-        order = Order.objects.create(user=request.user, status="Pending")
-        OrderItem.objects.create(order=order, product=product, quantity=quantity, price=product.price)
+        # 🛒 إضافة المنتج إلى السلة
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+        if not created:
+            cart_item.quantity += quantity
+        else:
+            cart_item.quantity = quantity
+        cart_item.save()
 
-        product.stock -= quantity
-        product.save()
-
-        messages.success(request, f"🛒 You ordered {quantity} x {product.name}")
+        messages.success(request, f"🛒 Added {quantity} × {product.name} to your cart")
         return redirect("shop")
 
     return render(request, "dashboard/shop.html", {"products": products})
@@ -218,3 +230,41 @@ def user_delete(request, pk):
         messages.success(request, "🗑️ User deleted successfully!")
         return redirect("users_list")
     return render(request, "dashboard/user_confirm_delete.html", {"user": user})
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from carts.models import Cart, CartItem
+from orders.models import Order, OrderItem
+
+
+@login_required
+def remove_from_cart(request, item_id):
+    item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    item.delete()
+    return redirect("cart_page")
+
+
+@login_required
+def checkout(request):
+    cart = get_object_or_404(Cart, user=request.user)
+    if not cart.items.exists():
+        return redirect("cart_page")
+
+    # إنشاء order
+    order = Order.objects.create(user=request.user, status="Pending")
+
+    for item in cart.items.all():
+        OrderItem.objects.create(
+            order=order,
+            product=item.product,
+            quantity=item.quantity,
+            price=item.product.price
+        )
+
+        # خصم من المخزون
+        item.product.stock -= item.quantity
+        item.product.save()
+
+    # تفريغ الكارت
+    cart.items.all().delete()
+
+    return redirect("orders_list")

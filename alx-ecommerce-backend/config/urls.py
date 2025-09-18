@@ -43,6 +43,6 @@ urlpatterns = [
 
     # Dashboard
     path("dashboard/", include("dashboard.urls")),
-    path('api/', include('carts.urls')),
+    path("api/", include("carts.urls")),
 
 ]

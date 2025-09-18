@@ -1,6 +1,13 @@
 {% extends "dashboard/base.html" %}
+
 {% block content %}
-<h2>🛍️ Shop</h2>
+<h2>
+    🛍️ Shop
+    <!-- أيقونة السلة -->
+    <a href="{% url 'cart-page' %}" class="btn btn-outline-secondary" style="float: right;">
+        🛒 Cart
+    </a>
+</h2>
 
 {% for product in products %}
 <div class="product-card">
@@ -12,7 +19,7 @@
         {% csrf_token %}
         <input type="hidden" name="product_id" value="{{ product.id }}">
         <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
-        <button type="submit" class="btn btn-primary">Order</button>
+        <button type="submit" class="btn btn-primary">Add to Cart</button>
     </form>
 </div>
 <hr>
