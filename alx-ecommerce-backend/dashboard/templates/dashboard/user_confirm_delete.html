@@ -1,12 +1,129 @@
 {% extends "dashboard/base.html" %}
 
 {% block content %}
-<h2>⚠️ Confirm Delete</h2>
-<p>Are you sure you want to delete user <strong>{{ user.username }}</strong>?</p>
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5 text-center">
+                <!-- Warning Icon -->
+                <div class="mb-4">
+                    <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-exclamation-triangle text-danger fa-2x"></i>
+                    </div>
+                </div>
+                
+                <!-- Title -->
+                <h2 class="h4 mb-3 fw-bold text-danger">Confirm Deletion</h2>
+                
+                <!-- Description -->
+                <p class="mb-4">
+                    You are about to delete the user account for <strong class="text-dark">{{ user.username }}</strong>. 
+                    This action cannot be undone.
+                </p>
+                
+                <!-- User Details Card -->
+                <div class="card border-danger mb-4">
+                    <div class="card-body text-start">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="fas fa-user text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0">{{ user.username }}</h6>
+                                <small class="text-muted">User since: {{ user.date_joined|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row small text-muted">
+                            <div class="col-6">
+                                <i class="fas fa-envelope me-1"></i> {{ user.email }}
+                            </div>
+                            <div class="col-6">
+                                <i class="fas fa-user-check me-1"></i> 
+                                {% if user.is_active %}
+                                    <span class="text-success">Active</span>
+                                {% else %}
+                                    <span class="text-danger">Inactive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Warning Alert -->
+                <div class="alert alert-warning text-start mb-4">
+                    <h6 class="alert-heading mb-2"><i class="fas fa-radiation me-1"></i> Important Warning</h6>
+                    <p class="mb-0 small">Deleting this user will permanently remove their account and all associated data from the system. This action cannot be reversed.</p>
+                </div>
+                
+                <!-- Confirmation Form -->
+                <form method="POST" class="mb-0">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'users_list' %}" class="btn btn-lg btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-lg btn-danger">
+                            <i class="fas fa-trash-alt me-1"></i> Confirm Deletion
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Additional Information -->
+        <div class="text-center mt-4">
+            <p class="text-muted small">
+                <i class="fas fa-info-circle me-1"></i> 
+                Need help? Contact your system administrator if you're unsure about this action.
+            </p>
+        </div>
+    </div>
+</div>
 
-<form method="POST">
-    {% csrf_token %}
-    <button type="submit">🗑️ Yes, Delete</button>
-    <a href="{% url 'users_list' %}">❌ Cancel</a>
-</form>
+<style>
+.card {
+    border-radius: 12px;
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #856404;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add confirmation dialog enhancement
+    const deleteForm = document.querySelector('form');
+    const deleteButton = deleteForm.querySelector('button[type="submit"]');
+    
+    deleteButton.addEventListener('click', function(e) {
+        // Add a small delay to show the loading state
+        const originalText = deleteButton.innerHTML;
+        deleteButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Deleting...';
+        deleteButton.disabled = true;
+        
+        // Revert after 2 seconds if the form hasn't submitted
+        setTimeout(function() {
+            if (deleteButton.disabled) {
+                deleteButton.innerHTML = originalText;
+                deleteButton.disabled = false;
+            }
+        }, 2000);
+    });
+});
+</script>
 {% endblock %}
