@@ -1,30 +1,598 @@
 {% extends "dashboard/base.html" %}
 
+{% block title %}Shop - E-Commerce Dashboard{% endblock %}
+
 {% block content %}
-<h2>
-    🛍️ Shop
-    <!-- أيقونة السلة -->
-    <a href="{% url 'cart-page' %}" class="btn btn-outline-secondary" style="float: right;">
-        🛒 Cart
-    </a>
-</h2>
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3a0ca3;
+        --accent-color: #7209b7;
+        --success-color: #4cc9f0;
+        --light-bg: #f8f9fa;
+        --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        --border-radius: 12px;
+    }
+    
+    .shop-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .shop-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .page-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+    
+    .btn-cart {
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    
+    .btn-cart:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(67, 97, 238, 0.4);
+        color: white;
+    }
+    
+    .cart-badge {
+        background-color: #f72585;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        position: relative;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .filters-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 20px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 30px;
+    }
+    
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+    }
+    
+    .product-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        transition: all 0.3s;
+        position: relative;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .product-image {
+        height: 200px;
+        background: linear-gradient(45deg, #e0c3fc 0%, #8ec5fc 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 4rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .product-card:hover .product-image img {
+        transform: scale(1.1);
+    }
+    
+    .product-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+    
+    .badge-new {
+        background: linear-gradient(45deg, #4cc9f0, #4361ee);
+        color: white;
+    }
+    
+    .badge-low-stock {
+        background: linear-gradient(45deg, #f72585, #f77062);
+        color: white;
+    }
+    
+    .product-info {
+        padding: 20px;
+    }
+    
+    .product-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #343a40;
+    }
+    
+    .product-description {
+        color: #6c757d;
+        margin-bottom: 15px;
+        font-size: 0.95rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .product-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .product-price {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+    
+    .product-stock {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .stock-high {
+        color: #28a745;
+    }
+    
+    .stock-medium {
+        color: #ffc107;
+    }
+    
+    .stock-low {
+        color: #dc3545;
+    }
+    
+    .add-to-cart-form {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .quantity-input {
+        width: 80px;
+        text-align: center;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        padding: 8px;
+        font-weight: 600;
+    }
+    
+    .btn-add-to-cart {
+        flex: 1;
+        background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        border: none;
+        color: white;
+        padding: 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-add-to-cart:hover:not(:disabled) {
+        background: linear-gradient(to right, var(--secondary-color), var(--accent-color));
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+    }
+    
+    .btn-add-to-cart:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+    }
+    
+    .btn-add-to-cart::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-add-to-cart:hover::before {
+        left: 100%;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+        grid-column: 1 / -1;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: #dee2e6;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .category-filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    .category-filter {
+        padding: 8px 16px;
+        border-radius: 20px;
+        background-color: #e9ecef;
+        border: none;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .category-filter:hover, .category-filter.active {
+        background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
+    }
+    
+    .search-box {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .search-box input {
+        padding-left: 45px;
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s;
+    }
+    
+    .search-box input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+    }
+    
+    .search-box .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+        .shop-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .add-to-cart-form {
+            flex-direction: column;
+        }
+        
+        .quantity-input {
+            width: 100%;
+        }
+    }
+</style>
 
-{% for product in products %}
-<div class="product-card">
-    <h3>{{ product.name }}</h3>
-    <p>Price: ${{ product.price }}</p>
-    <p>Stock: {{ product.stock }}</p>
-
-    <form method="post">
-        {% csrf_token %}
-        <input type="hidden" name="product_id" value="{{ product.id }}">
-        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
-        <button type="submit" class="btn btn-primary">Add to Cart</button>
-    </form>
+<div class="shop-container">
+    <!-- Header -->
+    <div class="shop-header">
+        <h1 class="page-title">🛍️ Shop</h1>
+        <div class="d-flex gap-3 align-items-center">
+            <!-- Search Box -->
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="form-control" placeholder="Search products..." id="searchInput">
+            </div>
+            
+            <a href="{% url 'cart-page' %}" class="btn-cart">
+                <i class="fas fa-shopping-cart"></i>
+                Cart
+                <span class="cart-badge" id="cartCount">{{ cart_items_count|default:0 }}</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters-card">
+        <h3><i class="fas fa-filter text-primary"></i> Filter Products</h3>
+        <div class="category-filters">
+            <button class="category-filter active" data-category="all">All Products</button>
+            <button class="category-filter" data-category="electronics">Electronics</button>
+            <button class="category-filter" data-category="clothing">Clothing</button>
+            <button class="category-filter" data-category="home">Home & Garden</button>
+            <button class="category-filter" data-category="sports">Sports</button>
+        </div>
+        
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
+                <label class="form-label"><i class="fas fa-dollar-sign"></i> Price Range</label>
+                <input type="range" class="form-range" min="0" max="1000" step="10" id="priceRange">
+                <div class="d-flex justify-content-between">
+                    <span>$0</span>
+                    <span id="maxPrice">$1000</span>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <label class="form-label"><i class="fas fa-sort"></i> Sort By</label>
+                <select class="form-select" id="sortBy">
+                    <option value="name">Name (A-Z)</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="newest">Newest First</option>
+                    <option value="popular">Most Popular</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Products Grid -->
+    <div class="products-grid" id="productsGrid">
+        {% for product in products %}
+        <div class="product-card" data-category="{{ product.category|default:'general' }}" data-name="{{ product.name|lower }}" data-price="{{ product.price }}">
+            <!-- Product Badges -->
+            {% if product.stock < 10 and product.stock > 0 %}
+                <div class="product-badge badge-low-stock">Low Stock</div>
+            {% elif product.is_new %}
+                <div class="product-badge badge-new">New</div>
+            {% endif %}
+            
+            <div class="product-image">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <i class="fas fa-{{ product.icon|default:'box' }}"></i>
+                {% endif %}
+            </div>
+            
+            <div class="product-info">
+                <h3 class="product-title">{{ product.name }}</h3>
+                <p class="product-description">
+                    {{ product.description|default:"High quality product with excellent features and premium materials."|truncatewords:15 }}
+                </p>
+                
+                <div class="product-meta">
+                    <div class="product-price">${{ product.price }}</div>
+                    <div class="product-stock">
+                        <i class="fas fa-box"></i>
+                        {% if product.stock > 10 %}
+                            <span class="stock-high">In Stock ({{ product.stock }})</span>
+                        {% elif product.stock > 0 %}
+                            <span class="stock-medium">Low Stock ({{ product.stock }})</span>
+                        {% else %}
+                            <span class="stock-low">Out of Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <form method="post" class="add-to-cart-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <input type="number" name="quantity" class="quantity-input" value="1" min="1" max="{{ product.stock }}" 
+                           {% if product.stock == 0 %}disabled{% endif %}>
+                    <button type="submit" class="btn-add-to-cart" {% if product.stock == 0 %}disabled{% endif %}>
+                        {% if product.stock == 0 %}
+                            <i class="fas fa-times-circle"></i> Out of Stock
+                        {% else %}
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>No products available</h3>
+            <p>Check back later for new arrivals!</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
-<hr>
-{% empty %}
-<p>No products available.</p>
-{% endfor %}
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryFilters = document.querySelectorAll('.category-filter');
+    const searchInput = document.getElementById('searchInput');
+    const priceRange = document.getElementById('priceRange');
+    const sortBy = document.getElementById('sortBy');
+    const productsGrid = document.getElementById('productsGrid');
+    const products = document.querySelectorAll('.product-card');
+    
+    // Category filtering
+    categoryFilters.forEach(filter => {
+        filter.addEventListener('click', function() {
+            categoryFilters.forEach(f => f.classList.remove('active'));
+            this.classList.add('active');
+            filterProducts();
+        });
+    });
+    
+    // Search functionality
+    searchInput.addEventListener('input', filterProducts);
+    
+    // Price range filtering
+    priceRange.addEventListener('input', function() {
+        document.getElementById('maxPrice').textContent = '$' + this.value;
+        filterProducts();
+    });
+    
+    // Sort functionality
+    sortBy.addEventListener('change', sortProducts);
+    
+    function filterProducts() {
+        const activeCategory = document.querySelector('.category-filter.active').dataset.category;
+        const searchTerm = searchInput.value.toLowerCase();
+        const maxPrice = parseFloat(priceRange.value);
+        
+        products.forEach(product => {
+            const category = product.dataset.category;
+            const name = product.dataset.name;
+            const price = parseFloat(product.dataset.price);
+            
+            const categoryMatch = activeCategory === 'all' || category === activeCategory;
+            const searchMatch = name.includes(searchTerm);
+            const priceMatch = price <= maxPrice;
+            
+            if (categoryMatch && searchMatch && priceMatch) {
+                product.style.display = 'block';
+                product.style.animation = 'fadeInUp 0.5s ease-out';
+            } else {
+                product.style.display = 'none';
+            }
+        });
+    }
+    
+    function sortProducts() {
+        const sortValue = sortBy.value;
+        const productArray = Array.from(products);
+        
+        productArray.sort((a, b) => {
+            switch(sortValue) {
+                case 'name':
+                    return a.dataset.name.localeCompare(b.dataset.name);
+                case 'price-low':
+                    return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                case 'price-high':
+                    return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                case 'newest':
+                case 'popular':
+                default:
+                    return Math.random() - 0.5; // Random for demo
+            }
+        });
+        
+        productArray.forEach((product, index) => {
+            product.style.animationDelay = (index * 0.1) + 's';
+            productsGrid.appendChild(product);
+        });
+    }
+    
+    // Add to cart with animation
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('.btn-add-to-cart');
+            const originalText = button.innerHTML;
+            
+            // Loading animation
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+            button.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Success animation
+                button.innerHTML = '<i class="fas fa-check"></i> Added!';
+                button.style.background = 'linear-gradient(to right, #28a745, #20c997)';
+                
+                // Update cart count
+                const cartCount = document.getElementById('cartCount');
+                cartCount.textContent = parseInt(cartCount.textContent) + 1;
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = '';
+                    button.disabled = false;
+                }, 1500);
+                
+                // Actually submit the form
+                this.submit();
+            }, 800);
+        });
+    });
+    
+    // Add fadeInUp animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
 {% endblock %}

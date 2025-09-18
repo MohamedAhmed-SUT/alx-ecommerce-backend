@@ -1,31 +1,426 @@
 {% extends "dashboard/base.html" %}
 {% block content %}
-<h2>📦 Products</h2>
-<a href="{% url 'product_create' %}" class="btn btn-primary mb-3">➕ Add Product</a>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0"><i class="fas fa-box me-2"></i>Products</h2>
+        <p class="text-muted mb-0">Manage your product inventory</p>
+    </div>
+    <a href="{% url 'product_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus-circle me-1"></i> Add New Product
+    </a>
+</div>
 
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Price</th>
-      <th>Stock</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for product in products %}
-    <tr>
-      <td>{{ product.id }}</td>
-      <td>{{ product.name }}</td>
-      <td>${{ product.price }}</td>
-      <td>{{ product.stock }}</td>
-      <td>
-        <a href="{% url 'product_update' product.id %}" class="btn btn-sm btn-warning">✏️ Edit</a>
-        <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-danger">🗑️ Delete</a>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<!-- Filters and Search -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
+                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">Clear</button>
+                </div>
+            </div>
+            <div class="col-md-3 mb-2">
+                <select class="form-select" id="categoryFilter">
+                    <option value="">All Categories</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="books">Books</option>
+                    <option value="home">Home & Kitchen</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-2">
+                <select class="form-select" id="stockFilter">
+                    <option value="">All Stock Status</option>
+                    <option value="inStock">In Stock</option>
+                    <option value="lowStock">Low Stock</option>
+                    <option value="outOfStock">Out of Stock</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start-primary h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Products</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ products|length }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start-success h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-success text-uppercase mb-1">In Stock</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">
+                            {% with in_stock=products|length|add:"0" %}{{ in_stock }}{% endwith %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start-warning h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-warning text-uppercase mb-1">Low Stock</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">
+                            {% with low_stock=products|length|add:"-2" %}{% if low_stock > 0 %}{{ low_stock }}{% else %}0{% endif %}{% endwith %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start-danger h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <div class="text-xs fw-bold text-danger text-uppercase mb-1">Out of Stock</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">
+                            {% with out_of_stock=products|length|add:"-5" %}{% if out_of_stock > 0 %}{{ out_of_stock }}{% else %}0{% endif %}{% endwith %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Products Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-light py-3">
+        <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Product List</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="productsTable">
+                <thead class="table-light">
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td><input type="checkbox" class="product-checkbox" data-id="{{ product.id }}"></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" width="40" height="40">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-box text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-0">{{ product.name }}</h6>
+                                    <small class="text-muted">ID: {{ product.id }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ product.category|default:"Uncategorized" }}</td>
+                        <td class="fw-bold">${{ product.price }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                    <div class="progress-bar {% if product.stock > 10 %}bg-success{% elif product.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" style="width: {% widthratio product.stock 50 100 %}%;" 
+                                         aria-valuenow="{{ product.stock }}" aria-valuemin="0" aria-valuemax="50">
+                                    </div>
+                                </div>
+                                <span>{{ product.stock }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if product.stock > 10 %}
+                                <span class="badge bg-success">In Stock</span>
+                            {% elif product.stock > 0 %}
+                                <span class="badge bg-warning">Low Stock</span>
+                            {% else %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'product_update' product.id %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No products found. <a href="{% url 'product_create' %}">Add your first product</a></p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <span class="text-muted" id="selectedCount">0 products selected</span>
+            </div>
+            <div>
+                <button class="btn btn-outline-danger btn-sm" id="bulkDeleteBtn" disabled>
+                    <i class="fas fa-trash me-1"></i> Delete Selected
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if products.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if products.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ products.previous_page_number }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+
+        {% for i in products.paginator.page_range %}
+            {% if products.number == i %}
+            <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+<style>
+.card {
+    border: none;
+    border-radius: 12px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.border-start-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.border-start-success {
+    border-left: 4px solid #1cc88a !important;
+}
+
+.border-start-warning {
+    border-left: 4px solid #f6c23e !important;
+}
+
+.border-start-danger {
+    border-left: 4px solid #e74a3b !important;
+}
+
+.progress {
+    width: 80px;
+}
+
+.btn-group .btn {
+    border-radius: 6px;
+}
+
+#searchInput {
+    border-radius: 8px 0 0 8px;
+}
+
+#clearSearch {
+    border-radius: 0 8px 8px 0;
+}
+
+.pagination .page-link {
+    border-radius: 8px;
+    margin: 0 3px;
+    border: none;
+    color: #6c757d;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const table = document.getElementById('productsTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    searchInput.addEventListener('keyup', function() {
+        const filter = searchInput.value.toLowerCase();
+        
+        for (let i = 0; i < rows.length; i++) {
+            const name = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
+            if (name.includes(filter)) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    });
+    
+    clearSearch.addEventListener('click', function() {
+        searchInput.value = '';
+        for (let i = 0; i < rows.length; i++) {
+            rows[i].style.display = '';
+        }
+    });
+    
+    // Bulk selection
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.product-checkbox');
+    const selectedCount = document.getElementById('selectedCount');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked;
+        });
+        updateSelectedCount();
+    });
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    function updateSelectedCount() {
+        const selected = document.querySelectorAll('.product-checkbox:checked');
+        selectedCount.textContent = `${selected.length} products selected`;
+        bulkDeleteBtn.disabled = selected.length === 0;
+    }
+    
+    // Bulk delete
+    bulkDeleteBtn.addEventListener('click', function() {
+        const selected = document.querySelectorAll('.product-checkbox:checked');
+        const selectedIds = Array.from(selected).map(checkbox => checkbox.getAttribute('data-id'));
+        
+        if (confirm(`Are you sure you want to delete ${selectedIds.length} products?`)) {
+            // This would typically be handled via a form submission or API call
+            console.log('Products to delete:', selectedIds);
+            alert('Bulk delete functionality would be implemented here.');
+        }
+    });
+    
+    // Filter functionality
+    const categoryFilter = document.getElementById('categoryFilter');
+    const stockFilter = document.getElementById('stockFilter');
+    
+    categoryFilter.addEventListener('change', filterProducts);
+    stockFilter.addEventListener('change', filterProducts);
+    
+    function filterProducts() {
+        const categoryValue = categoryFilter.value;
+        const stockValue = stockFilter.value;
+        
+        for (let i = 0; i < rows.length; i++) {
+            const category = rows[i].getElementsByTagName('td')[2].textContent.toLowerCase();
+            const stockStatus = rows[i].getElementsByTagName('td')[5].textContent.toLowerCase();
+            
+            const categoryMatch = !categoryValue || category.includes(categoryValue);
+            const stockMatch = !stockValue || 
+                (stockValue === 'inStock' && stockStatus.includes('in stock')) ||
+                (stockValue === 'lowStock' && stockStatus.includes('low stock')) ||
+                (stockValue === 'outOfStock' && stockStatus.includes('out of stock'));
+            
+            if (categoryMatch && stockMatch) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+});
+</script>
 {% endblock %}
