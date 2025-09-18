@@ -1,4 +1,5 @@
 from pathlib import Path
+STATIC_URL = '/static/'
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,6 +30,7 @@ INSTALLED_APPS = [
     'products',
     'orders',
     'carts',
+
 ]
 
 MIDDLEWARE = [

@@ -41,7 +41,7 @@
         .login-left {
             background: linear-gradient(to bottom right, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 40px;
+            padding: 60px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -253,22 +253,8 @@
                         <button type="submit" class="btn btn-login">Login</button>
                     </form>
                     
-                    <div class="separator">or continue with</div>
-                    
-                    <div class="social-login">
-                        <a href="#" class="social-btn facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="social-btn google">
-                            <i class="fab fa-google"></i>
-                        </a>
-                        <a href="#" class="social-btn twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                    </div>
-                    
                     <div class="additional-links">
-                        Don't have an account? <a href="#">Sign up here</a>
+                        Don't have an account? <a href="{% url 'signup' %}">Sign up here</a>
                     </div>
                 </div>
             </div>
