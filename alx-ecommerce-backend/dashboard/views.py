@@ -9,6 +9,15 @@ from carts.models import Cart, CartItem
 from products.models import Product
 from orders.models import Order, OrderItem
 from .forms import ProductForm, OrderForm
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from carts.models import Cart
+
+@login_required
+def clear_cart(request):
+    cart = get_object_or_404(Cart, user=request.user)
+    cart.items.all().delete()  # يمسح كل العناصر من الكارت
+    return redirect("cart_page")
 
 # ================= Cart Views =================
 @login_required

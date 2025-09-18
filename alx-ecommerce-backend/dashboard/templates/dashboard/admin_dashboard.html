@@ -1,94 +1,347 @@
 {% extends "dashboard/base.html" %}
 {% block content %}
-<h2>📊 Admin Dashboard</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-shield me-2"></i>Admin Dashboard</h2>
+    <div>
+        <span class="badge bg-info p-2">
+            <i class="fas fa-clock me-1"></i> {% now "F j, Y, g:i a" %}
+        </span>
+    </div>
+</div>
 
 <!-- Filter Buttons -->
-<div class="mb-3">
-  <a href="?period=all" class="btn btn-outline-dark {% if period == 'all' %}active{% endif %}">All</a>
-  <a href="?period=day" class="btn btn-outline-primary {% if period == 'day' %}active{% endif %}">Today</a>
-  <a href="?period=week" class="btn btn-outline-success {% if period == 'week' %}active{% endif %}">This Week</a>
-  <a href="?period=month" class="btn btn-outline-warning {% if period == 'month' %}active{% endif %}">This Month</a>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title"><i class="fas fa-filter me-2"></i>Filter Data</h5>
+        <div class="btn-group" role="group">
+            <a href="?period=all" class="btn {% if period == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-globe me-1"></i> All
+            </a>
+            <a href="?period=day" class="btn {% if period == 'day' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-calendar-day me-1"></i> Today
+            </a>
+            <a href="?period=week" class="btn {% if period == 'week' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-calendar-week me-1"></i> This Week
+            </a>
+            <a href="?period=month" class="btn {% if period == 'month' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-calendar-alt me-1"></i> This Month
+            </a>
+        </div>
+    </div>
 </div>
 
 <!-- Stats Cards -->
-<div class="row">
-  <div class="col-md-3">
-    <a href="{% url 'users_list' %}" class="text-decoration-none">
-      <div class="card bg-primary text-white mb-3 text-center">
-        <div class="card-body">
-          <h5>👤 Users</h5>
-          <h3>{{ users_count }}</h3>
-        </div>
-      </div>
-    </a>
-  </div>
-
-  <div class="col-md-3">
-    <a href="{% url 'products_list' %}" class="text-decoration-none">
-      <div class="card bg-success text-white mb-3 text-center">
-        <div class="card-body">
-          <h5>📦 Products</h5>
-          <h3>{{ products_count }}</h3>
-        </div>
-      </div>
-    </a>
-  </div>
-
-  <div class="col-md-3">
-    <a href="{% url 'orders_list' %}" class="text-decoration-none">
-      <div class="card bg-warning text-dark mb-3 text-center">
-        <div class="card-body">
-          <h5>🛒 Orders</h5>
-          <h3>{{ orders_count }}</h3>
-        </div>
-      </div>
-    </a>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card bg-danger text-white mb-3 text-center">
-      <div class="card-body">
-        <h5>💰 Total Sales</h5>
-        <h3>${{ total_sales }}</h3>
-      </div>
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'users_list' %}" class="text-decoration-none">
+            <div class="card border-left-primary h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Users</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ users_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
     </div>
-  </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'products_list' %}" class="text-decoration-none">
+            <div class="card border-left-success h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Products</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ products_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-box fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <a href="{% url 'orders_list' %}" class="text-decoration-none">
+            <div class="card border-left-warning h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Orders</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ orders_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Total Sales</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">${{ total_sales }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Charts Section -->
-<div class="row mt-4">
-  <div class="col-md-6">
-    <canvas id="ordersChart"></canvas>
-  </div>
-  <div class="col-md-6">
-    <canvas id="salesChart"></canvas>
-  </div>
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Sales Overview</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="salesChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-chart-pie me-2"></i>Revenue Sources</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-history me-2"></i>Recent Orders</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">#ORD-7842</h6>
+                            <small class="text-muted">John Smith - May 15, 2023</small>
+                        </div>
+                        <span class="badge bg-success">$128.50</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">#ORD-7841</h6>
+                            <small class="text-muted">Emma Johnson - May 15, 2023</small>
+                        </div>
+                        <span class="badge bg-warning">$82.75</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">#ORD-7840</h6>
+                            <small class="text-muted">Michael Brown - May 14, 2023</small>
+                        </div>
+                        <span class="badge bg-success">$215.00</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">#ORD-7839</h6>
+                            <small class="text-muted">Sarah Williams - May 14, 2023</small>
+                        </div>
+                        <span class="badge bg-danger">$53.25</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-tasks me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <a href="{% url 'products_list' %}" class="btn btn-outline-primary w-100 py-3">
+                            <i class="fas fa-plus-circle fa-2x mb-2"></i>
+                            <h6>Add Product</h6>
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="{% url 'users_list' %}" class="btn btn-outline-success w-100 py-3">
+                            <i class="fas fa-user-plus fa-2x mb-2"></i>
+                            <h6>Manage Users</h6>
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="{% url 'orders_list' %}" class="btn btn-outline-warning w-100 py-3">
+                            <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                            <h6>View Orders</h6>
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="#" class="btn btn-outline-info w-100 py-3">
+                            <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                            <h6>Reports</h6>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const ordersChart = new Chart(document.getElementById('ordersChart'), {
-    type: 'bar',
-    data: {
-      labels: ['Orders'],
-      datasets: [{
-        label: 'Total Orders',
-        data: [{{ orders_count }}],
-        backgroundColor: 'rgba(255, 206, 86, 0.7)',
-      }]
-    }
-  });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sales Chart
+        const salesChart = new Chart(document.getElementById('salesChart'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Sales ($)',
+                    data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 26000, 31000, 35000, 40000, 42000],
+                    backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    pointRadius: 3,
+                    pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    pointBorderColor: 'rgba(78, 115, 223, 1)',
+                    pointHoverRadius: 3,
+                    pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
 
-  const salesChart = new Chart(document.getElementById('salesChart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Total Sales'],
-      datasets: [{
-        label: 'Sales ($)',
-        data: [{{ total_sales }}, 10000 - {{ total_sales }}],
-        backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(201, 203, 207, 0.3)']
-      }]
-    }
-  });
+        // Revenue Chart
+        const revenueChart = new Chart(document.getElementById('revenueChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Electronics', 'Clothing', 'Books', 'Home & Kitchen'],
+                datasets: [{
+                    data: [45, 25, 15, 15],
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a'],
+                    hoverBorderColor: 'rgba(234, 236, 244, 1)',
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    });
 </script>
+
+<style>
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+
+.border-left-danger {
+    border-left: 0.25rem solid #e74a3b !important;
+}
+
+.text-xs {
+    font-size: 0.7rem;
+}
+
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+
+.text-gray-300 {
+    color: #dddfeb !important;
+}
+
+.btn-group .btn {
+    border-radius: 0.35rem;
+    margin-right: 0.5rem;
+}
+
+.list-group-item {
+    border-left: 0;
+    border-right: 0;
+    padding: 1rem 0;
+}
+
+.list-group-item:first-child {
+    border-top: 0;
+}
+
+.list-group-item:last-child {
+    border-bottom: 0;
+}
+</style>
 {% endblock %}
