@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('', views.admin_dashboard, name="dashboard_home"),
     path('admin-dashboard/', views.admin_dashboard, name="admin_dashboard"),
+    path('dashboard/reports/', views.reports_view, name='reports_view'),
     # Products CRUD
     path('products/', views.products_list, name="products_list"),
     path('products/add/', views.product_create, name="product_create"),

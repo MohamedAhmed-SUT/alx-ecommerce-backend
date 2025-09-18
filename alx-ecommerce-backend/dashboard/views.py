@@ -84,33 +84,58 @@ def shop_view(request):
     return render(request, "dashboard/shop.html", {"products": products})
 
 # ================= Admin Dashboard =================
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.models import User
+from django.utils.timezone import now, timedelta
+from orders.models import Order
+from products.models import Product
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def admin_dashboard(request):
     period = request.GET.get("period", "all")
     today = now().date()
     start_date = None
+
     if period == "day":
         start_date = today
     elif period == "week":
         start_date = today - timedelta(days=7)
     elif period == "month":
         start_date = today.replace(day=1)
-    orders = Order.objects.all()
+
+    orders = Order.objects.all().order_by('-created_at')
     if start_date:
         orders = orders.filter(created_at__date__gte=start_date)
-    users_count = User.objects.count()
-    products_count = Product.objects.count()
-    orders_count = orders.count()
-    total_sales = sum(sum(item.price * item.quantity for item in order.items.all()) for order in orders)
+
+    # حساب إجمالي المبيعات ديناميكيًا
+    total_sales = sum(
+        sum(item.price * item.quantity for item in order.items.all())
+        for order in orders
+    )
+
     context = {
-        "users_count": users_count,
-        "products_count": products_count,
-        "orders_count": orders_count,
+        "users_count": User.objects.count(),
+        "products_count": Product.objects.count(),
+        "orders_count": orders.count(),
         "total_sales": total_sales,
         "period": period,
+        "recent_orders": orders[:5],
     }
     return render(request, "dashboard/admin_dashboard.html", context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def reports_view(request):
+    orders = Order.objects.all().order_by('-created_at')
+    total_sales = sum(
+        sum(item.price * item.quantity for item in order.items.all())
+        for order in orders
+    )
+    context = {"orders": orders, "total_sales": total_sales}
+    return render(request, "dashboard/reports.html", context)
 
 # ================= Products CRUD =================
 @login_required
