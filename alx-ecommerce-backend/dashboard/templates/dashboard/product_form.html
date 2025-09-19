@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+{% load widget_tweaks %}
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
@@ -42,18 +43,12 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.name.id_for_label }}" class="form-label">Product Name *</label>
-                            {{ form.name }}
-                            {% if form.name.errors %}
-                                <div class="text-danger small mt-1">{{ form.name.errors }}</div>
-                            {% endif %}
+                            {{ form.name|add_class:"form-control" }}
                         </div>
                         
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.category.id_for_label }}" class="form-label">Category *</label>
-                            {{ form.category }}
-                            {% if form.category.errors %}
-                                <div class="text-danger small mt-1">{{ form.category.errors }}</div>
-                            {% endif %}
+                            {{ form.category|add_class:"form-select" }}
                         </div>
                     </div>
                     
@@ -62,66 +57,56 @@
                             <label for="{{ form.price.id_for_label }}" class="form-label">Price ($) *</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                {{ form.price }}
+                                {{ form.price|add_class:"form-control" }}
                             </div>
-                            {% if form.price.errors %}
-                                <div class="text-danger small mt-1">{{ form.price.errors }}</div>
-                            {% endif %}
                         </div>
                         
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.stock.id_for_label }}" class="form-label">Stock Quantity *</label>
-                            {{ form.stock }}
-                            {% if form.stock.errors %}
-                                <div class="text-danger small mt-1">{{ form.stock.errors }}</div>
-                            {% endif %}
+                            {{ form.stock|add_class:"form-control" }}
                         </div>
                     </div>
                     
                     <div class="mb-3">
                         <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
-                        {{ form.description }}
+                        {{ form.description|add_class:"form-control" }}
                         <div class="form-text">Provide a detailed description of your product.</div>
-                        {% if form.description.errors %}
-                            <div class="text-danger small mt-1">{{ form.description.errors }}</div>
-                        {% endif %}
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.brand.id_for_label }}" class="form-label">Brand</label>
-                            {{ form.brand }}
-                            {% if form.brand.errors %}
-                                <div class="text-danger small mt-1">{{ form.brand.errors }}</div>
-                            {% endif %}
+                            {{ form.brand|add_class:"form-control" }}
                         </div>
                         
                         <div class="col-md-6 mb-3">
                             <label for="{{ form.weight.id_for_label }}" class="form-label">Weight (kg)</label>
                             <div class="input-group">
-                                {{ form.weight }}
+                                {{ form.weight|add_class:"form-control" }}
                                 <span class="input-group-text">kg</span>
                             </div>
-                            {% if form.weight.errors %}
-                                <div class="text-danger small mt-1">{{ form.weight.errors }}</div>
-                            {% endif %}
                         </div>
                     </div>
                     
                     <div class="mb-3">
                         <label for="{{ form.image.id_for_label }}" class="form-label">Product Image</label>
-                        {{ form.image }}
-                        {% if form.image.errors %}
-                            <div class="text-danger small mt-1">{{ form.image.errors }}</div>
-                        {% endif %}
+                        {{ form.image|add_class:"form-control"|attr:"accept:image/*" }}
+                        
                         {% if form.instance.image %}
-                            <div class="mt-2">
+                            <div class="mt-2" id="current-image">
                                 <small class="text-muted">Current image:</small>
                                 <div class="mt-1">
-                                    <img src="{{ form.instance.image.url }}" alt="Product image" class="img-thumbnail" style="max-height: 100px;">
+                                    <img src="{{ form.instance.image.url }}" alt="Product image" class="img-thumbnail" style="max-height: 120px;">
                                 </div>
                             </div>
                         {% endif %}
+                        
+                        <div class="mt-2" id="new-image-preview" style="display:none;">
+                            <small class="text-muted">New image preview:</small>
+                            <div class="mt-1">
+                                <img src="" alt="Preview" class="img-thumbnail" style="max-height: 120px;">
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-check form-switch mb-4">
@@ -147,6 +132,7 @@
     </div>
     
     <div class="col-lg-4">
+        <!-- Sidebar Tips + Stats + Recent -->
         <div class="card shadow-sm">
             <div class="card-header bg-light py-3">
                 <h5 class="card-title mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h5>
@@ -165,15 +151,15 @@
                 <h6 class="mt-4">Quick Stats</h6>
                 <div class="d-flex justify-content-around text-center mt-3">
                     <div>
-                        <div class="h4 mb-0 text-primary">{% if products_count %}{{ products_count }}{% else %}0{% endif %}</div>
+                        <div class="h4 mb-0 text-primary">{{ products_count|default:0 }}</div>
                         <small class="text-muted">Total Products</small>
                     </div>
                     <div>
-                        <div class="h4 mb-0 text-success">{% if active_products_count %}{{ active_products_count }}{% else %}0{% endif %}</div>
+                        <div class="h4 mb-0 text-success">{{ active_products_count|default:0 }}</div>
                         <small class="text-muted">Active Products</small>
                     </div>
                     <div>
-                        <div class="h4 mb-0 text-warning">{% if low_stock_count %}{{ low_stock_count }}{% else %}0{% endif %}</div>
+                        <div class="h4 mb-0 text-warning">{{ low_stock_count|default:0 }}</div>
                         <small class="text-muted">Low Stock</small>
                     </div>
                 </div>
@@ -215,22 +201,22 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
+<!-- Delete Modal -->
 {% if form.instance.pk %}
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete <strong>{{ form.instance.name }}</strong>? This action cannot be undone.</p>
-                <p class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>All associated data will be permanently removed.</p>
+                <p>Are you sure you want to delete <strong>{{ form.instance.name }}</strong>?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>This action cannot be undone.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form method="post" action="{% url 'product_delete' form.instance.pk %}" class="d-inline">
+                <form method="post" action="{% url 'product_delete' form.instance.pk %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Delete Product</button>
                 </form>
@@ -244,64 +230,24 @@
 .form-control, .form-select {
     border-radius: 8px;
     border: 2px solid #e2e8f0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 0.75rem 1rem;
 }
-
 .form-control:focus, .form-select:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
 }
-
-.form-label {
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: #374151;
-}
-
-.card {
-    border: none;
-    border-radius: 12px;
-}
-
-.card-header {
-    border-radius: 12px 12px 0 0 !important;
-}
-
-.alert-info {
-    background-color: #ebf5ff;
-    border-color: #b3d9ff;
-    color: #1a56db;
-}
-
-.list-group-item {
-    border-color: #f3f4f6;
-}
-
-.input-group-text {
-    background-color: #f9fafb;
-}
-
-#id_description {
-    min-height: 120px;
-    resize: vertical;
-}
-
-.form-check-input:checked {
-    background-color: #10b981;
-    border-color: #10b981;
-}
+.form-label { font-weight: 500; color: #374151; }
+.card { border: none; border-radius: 12px; }
+.card-header { border-radius: 12px 12px 0 0 !important; }
+.alert-info { background-color: #ebf5ff; border-color: #b3d9ff; color: #1a56db; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add validation to form
     const form = document.getElementById('product-form');
     form.addEventListener('submit', function(e) {
         let isValid = true;
         const requiredFields = form.querySelectorAll('[required]');
-        
         requiredFields.forEach(field => {
             if (!field.value.trim()) {
                 isValid = false;
@@ -310,41 +256,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 field.classList.remove('is-invalid');
             }
         });
-        
         if (!isValid) {
             e.preventDefault();
-            // Scroll to first error
             const firstError = form.querySelector('.is-invalid');
-            if (firstError) {
-                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     });
-    
-    // Preview image before upload
+
+    // Image preview
     const imageInput = document.getElementById('id_image');
+    const preview = document.getElementById('new-image-preview');
+    const previewImg = preview.querySelector('img');
+    const currentImage = document.getElementById('current-image');
+
     if (imageInput) {
         imageInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Create or update preview
-                    let preview = document.getElementById('image-preview');
-                    if (!preview) {
-                        preview = document.createElement('div');
-                        preview.id = 'image-preview';
-                        preview.className = 'mt-2';
-                        imageInput.parentNode.appendChild(preview);
-                    }
-                    preview.innerHTML = `
-                        <small class="text-muted">New image preview:</small>
-                        <div class="mt-1">
-                            <img src="${e.target.result}" alt="Preview" class="img-thumbnail" style="max-height: 100px;">
-                        </div>
-                    `;
+                reader.onload = function(ev) {
+                    previewImg.src = ev.target.result;
+                    preview.style.display = 'block';
+                    if (currentImage) currentImage.style.display = 'none';
                 };
                 reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+                if (currentImage) currentImage.style.display = 'block';
             }
         });
     }

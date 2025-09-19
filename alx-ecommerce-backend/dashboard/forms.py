@@ -19,7 +19,19 @@ class CustomUserCreationForm(UserCreationForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ["name", "price", "stock", "description", "category"]  
+        fields = ["name", "description", "price", "stock", "category", "brand", "weight", "is_active", "image"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "price": forms.NumberInput(attrs={"min": "0", "step": "0.01", "class": "form-control"}),
+            "stock": forms.NumberInput(attrs={"min": "0", "class": "form-control"}),
+            "category": forms.Select(attrs={"class": "form-select"}),
+            "brand": forms.TextInput(attrs={"class": "form-control"}),
+            "weight": forms.NumberInput(attrs={"min": "0", "step": "0.01", "class": "form-control"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "image": forms.ClearableFileInput(attrs={"class": "form-control", "accept": "image/*"}),
+        }
+
 
 # --- Order Form ---
 class OrderForm(forms.ModelForm):

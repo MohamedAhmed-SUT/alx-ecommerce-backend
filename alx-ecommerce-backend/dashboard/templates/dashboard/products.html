@@ -24,10 +24,9 @@
             <div class="col-md-3 mb-2">
                 <select class="form-select" id="categoryFilter">
                     <option value="">All Categories</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="books">Books</option>
-                    <option value="home">Home & Kitchen</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name|lower }}">{{ category.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="col-md-3 mb-2">
@@ -50,7 +49,7 @@
                 <div class="row align-items-center">
                     <div class="col">
                         <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Products</div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">{{ products|length }}</div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ products.paginator.count|default:0 }}</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-boxes fa-2x text-gray-300"></i>
@@ -59,16 +58,13 @@
             </div>
         </div>
     </div>
-
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-start-success h-100">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
                         <div class="text-xs fw-bold text-success text-uppercase mb-1">In Stock</div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            {% with in_stock=products|length|add:"0" %}{{ in_stock }}{% endwith %}
-                        </div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ in_stock|default:0 }}</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-check-circle fa-2x text-gray-300"></i>
@@ -77,16 +73,13 @@
             </div>
         </div>
     </div>
-
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-start-warning h-100">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
                         <div class="text-xs fw-bold text-warning text-uppercase mb-1">Low Stock</div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            {% with low_stock=products|length|add:"-2" %}{% if low_stock > 0 %}{{ low_stock }}{% else %}0{% endif %}{% endwith %}
-                        </div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ low_stock|default:0 }}</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
@@ -95,16 +88,13 @@
             </div>
         </div>
     </div>
-
     <div class="col-xl-3 col-md-6 mb-4">
         <div class="card border-start-danger h-100">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col">
                         <div class="text-xs fw-bold text-danger text-uppercase mb-1">Out of Stock</div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">
-                            {% with out_of_stock=products|length|add:"-5" %}{% if out_of_stock > 0 %}{{ out_of_stock }}{% else %}0{% endif %}{% endwith %}
-                        </div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ out_of_stock|default:0 }}</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-times-circle fa-2x text-gray-300"></i>
@@ -126,36 +116,48 @@
                 <thead class="table-light">
                     <tr>
                         <th><input type="checkbox" id="selectAll"></th>
+                        <th>Image</th>
                         <th>Product</th>
-                        <th>Category</th>
+                        <th>Brand</th>
+                        <th>Weight (kg)</th>
                         <th>Price</th>
                         <th>Stock</th>
-                        <th>Status</th>
+                        <th>Category</th>
+                        <th>Active</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for product in products %}
-                    <tr>
+                    <tr data-product-id="{{ product.id }}"
+                        data-product-name="{{ product.name }}"
+                        data-product-brand="{{ product.brand|default:'-' }}"
+                        data-product-weight="{{ product.weight|default:'-' }}"
+                        data-product-price="{{ product.price }}"
+                        data-product-stock="{{ product.stock }}"
+                        data-product-category="{{ product.category.name|default:'Uncategorized' }}"
+                        data-product-status="{% if product.is_active %}Active{% else %}Inactive{% endif %}"
+                        data-product-image="{% if product.image %}{{ product.image.url }}{% else %}''{% endif %}">
                         <td><input type="checkbox" class="product-checkbox" data-id="{{ product.id }}"></td>
                         <td>
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
-                                    {% if product.image %}
-                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" width="40" height="40">
-                                    {% else %}
-                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                            <i class="fas fa-box text-muted"></i>
-                                        </div>
-                                    {% endif %}
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded" width="60" height="60">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-box text-muted"></i>
                                 </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
                                 <div class="flex-grow-1 ms-3">
                                     <h6 class="mb-0">{{ product.name }}</h6>
                                     <small class="text-muted">ID: {{ product.id }}</small>
                                 </div>
                             </div>
                         </td>
-                        <td>{{ product.category|default:"Uncategorized" }}</td>
+                        <td>{{ product.brand|default:"-" }}</td>
+                        <td>{{ product.weight|default:"-" }}</td>
                         <td class="fw-bold">${{ product.price }}</td>
                         <td>
                             <div class="d-flex align-items-center">
@@ -168,32 +170,31 @@
                                 <span>{{ product.stock }}</span>
                             </div>
                         </td>
+                        <td>{{ product.category.name|default:"Uncategorized" }}</td>
                         <td>
-                            {% if product.stock > 10 %}
-                                <span class="badge bg-success">In Stock</span>
-                            {% elif product.stock > 0 %}
-                                <span class="badge bg-warning">Low Stock</span>
+                            {% if product.is_active %}
+                                <span class="badge bg-success">Active</span>
                             {% else %}
-                                <span class="badge bg-danger">Out of Stock</span>
+                                <span class="badge bg-secondary">Inactive</span>
                             {% endif %}
                         </td>
                         <td>
                             <div class="btn-group">
-                                <a href="{% url 'product_update' product.id %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </a>
-                                <a href="#" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="View Details">
+                                <button class="btn btn-sm btn-outline-primary view-details-btn" data-bs-toggle="modal" data-bs-target="#productDetailsModal" data-bs-toggle="tooltip" title="View Details">
                                     <i class="fas fa-eye"></i>
-                                </a>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="window.location.href=&quot;{% url 'product_update' product.id %}&quot;" data-bs-toggle="tooltip" title="Edit Order">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="window.location.href=&quot;{% url 'product_delete' product.id %}&quot;" data-bs-toggle="tooltip" title="Delete Order">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center py-4">
+                        <td colspan="10" class="text-center py-4">
                             <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
                             <p class="text-muted">No products found. <a href="{% url 'product_create' %}">Add your first product</a></p>
                         </td>
@@ -260,7 +261,82 @@
 </nav>
 {% endif %}
 
+<!-- Product Details Modal -->
+<div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productDetailsModalLabel">Product Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img id="modalProductImage" src="" alt="Product Image" class="img-fluid rounded" style="max-width: 100%;">
+                        <div id="modalNoImage" class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 100%; height: 200px; display: none;">
+                            <i class="fas fa-box text-muted fa-3x"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6>ID: <span id="modalProductId"></span></h6>
+                        <p><strong>Name:</strong> <span id="modalProductName"></span></p>
+                        <p><strong>Brand:</strong> <span id="modalProductBrand"></span></p>
+                        <p><strong>Weight:</strong> <span id="modalProductWeight"></span> kg</p>
+                        <p><strong>Price:</strong> $<span id="modalProductPrice"></span></p>
+                        <p><strong>Stock:</strong> <span id="modalProductStock"></span></p>
+                        <p><strong>Category:</strong> <span id="modalProductCategory"></span></p>
+                        <p><strong>Status:</strong> <span id="modalProductStatus" class="badge"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-primary" id="modalEditButton" onclick="window.location.href='#'">Edit</button>
+                <button class="btn btn-sm btn-danger" id="modalDeleteButton" onclick="window.location.href='#'">Delete</button>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
+/* تجاوز أنماط الأزرار لتكون فاتحة */
+.btn-outline-primary {
+    color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    background-color: transparent !important;
+}
+.btn-outline-primary:hover {
+    color: #fff !important;
+    background-color: #3b82f6 !important;
+}
+
+.btn-outline-success {
+    color: #10b981 !important;
+    border-color: #10b981 !important;
+    background-color: transparent !important;
+}
+.btn-outline-success:hover {
+    color: #fff !important;
+    background-color: #10b981 !important;
+}
+
+.btn-outline-danger {
+    color: #ef4444 !important;
+    border-color: #ef4444 !important;
+    background-color: transparent !important;
+}
+.btn-outline-danger:hover {
+    color: #fff !important;
+    background-color: #ef4444 !important;
+}
+
+/* التأكد من أن الأزرار في الجدول ليست متأثرة بالخلفية الغامقة */
+.btn-group .btn {
+    border-radius: 6px !important;
+    opacity: 1 !important; /* التأكد من أن الأزرار مرئية */
+}
+
+/* استمرار أنماط الصفحة الأصلية */
 .card {
     border: none;
     border-radius: 12px;
@@ -299,10 +375,6 @@
     width: 80px;
 }
 
-.btn-group .btn {
-    border-radius: 6px;
-}
-
 #searchInput {
     border-radius: 8px 0 0 8px;
 }
@@ -322,98 +394,97 @@
     background-color: #4e73df;
     border-color: #4e73df;
 }
+
+.modal-content {
+    border-radius: 12px;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
-    
+
     // Search functionality
     const searchInput = document.getElementById('searchInput');
     const clearSearch = document.getElementById('clearSearch');
     const table = document.getElementById('productsTable');
     const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-    
+
     searchInput.addEventListener('keyup', function() {
         const filter = searchInput.value.toLowerCase();
-        
         for (let i = 0; i < rows.length; i++) {
-            const name = rows[i].getElementsByTagName('td')[1].textContent.toLowerCase();
-            if (name.includes(filter)) {
+            const name = rows[i].getElementsByTagName('td')[2].textContent.toLowerCase();
+            const brand = rows[i].getElementsByTagName('td')[3].textContent.toLowerCase();
+            if (name.includes(filter) || brand.includes(filter)) {
                 rows[i].style.display = '';
             } else {
                 rows[i].style.display = 'none';
             }
         }
     });
-    
+
     clearSearch.addEventListener('click', function() {
         searchInput.value = '';
         for (let i = 0; i < rows.length; i++) {
             rows[i].style.display = '';
         }
     });
-    
+
     // Bulk selection
     const selectAll = document.getElementById('selectAll');
     const checkboxes = document.querySelectorAll('.product-checkbox');
     const selectedCount = document.getElementById('selectedCount');
     const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-    
+
     selectAll.addEventListener('change', function() {
         checkboxes.forEach(checkbox => {
             checkbox.checked = selectAll.checked;
         });
         updateSelectedCount();
     });
-    
+
     checkboxes.forEach(checkbox => {
         checkbox.addEventListener('change', updateSelectedCount);
     });
-    
+
     function updateSelectedCount() {
         const selected = document.querySelectorAll('.product-checkbox:checked');
         selectedCount.textContent = `${selected.length} products selected`;
         bulkDeleteBtn.disabled = selected.length === 0;
     }
-    
-    // Bulk delete
+
+    // Bulk delete (placeholder)
     bulkDeleteBtn.addEventListener('click', function() {
         const selected = document.querySelectorAll('.product-checkbox:checked');
         const selectedIds = Array.from(selected).map(checkbox => checkbox.getAttribute('data-id'));
-        
         if (confirm(`Are you sure you want to delete ${selectedIds.length} products?`)) {
-            // This would typically be handled via a form submission or API call
             console.log('Products to delete:', selectedIds);
             alert('Bulk delete functionality would be implemented here.');
         }
     });
-    
+
     // Filter functionality
     const categoryFilter = document.getElementById('categoryFilter');
     const stockFilter = document.getElementById('stockFilter');
-    
+
     categoryFilter.addEventListener('change', filterProducts);
     stockFilter.addEventListener('change', filterProducts);
-    
+
     function filterProducts() {
         const categoryValue = categoryFilter.value;
         const stockValue = stockFilter.value;
-        
         for (let i = 0; i < rows.length; i++) {
-            const category = rows[i].getElementsByTagName('td')[2].textContent.toLowerCase();
-            const stockStatus = rows[i].getElementsByTagName('td')[5].textContent.toLowerCase();
-            
+            const category = rows[i].getElementsByTagName('td')[7].textContent.toLowerCase();
+            const stockStatus = rows[i].getElementsByTagName('td')[6].textContent.toLowerCase();
             const categoryMatch = !categoryValue || category.includes(categoryValue);
             const stockMatch = !stockValue || 
-                (stockValue === 'inStock' && stockStatus.includes('in stock')) ||
-                (stockValue === 'lowStock' && stockStatus.includes('low stock')) ||
-                (stockValue === 'outOfStock' && stockStatus.includes('out of stock'));
-            
+                (stockValue === 'inStock' && parseInt(stockStatus) > 10) ||
+                (stockValue === 'lowStock' && parseInt(stockStatus) > 0 && parseInt(stockStatus) <= 10) ||
+                (stockValue === 'outOfStock' && parseInt(stockStatus) === 0);
             if (categoryMatch && stockMatch) {
                 rows[i].style.display = '';
             } else {
@@ -421,6 +492,51 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+
+    // View details modal
+    const viewDetailsButtons = document.querySelectorAll('.view-details-btn');
+    viewDetailsButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr');
+            const productId = row.dataset.productId;
+            const productName = row.dataset.productName;
+            const productBrand = row.dataset.productBrand;
+            const productWeight = row.dataset.productWeight;
+            const productPrice = row.dataset.productPrice;
+            const productStock = row.dataset.productStock;
+            const productCategory = row.dataset.productCategory;
+            const productStatus = row.dataset.productStatus;
+            const productImage = row.dataset.productImage;
+
+            // Populate modal fields
+            document.getElementById('modalProductId').textContent = productId;
+            document.getElementById('modalProductName').textContent = productName;
+            document.getElementById('modalProductBrand').textContent = productBrand;
+            document.getElementById('modalProductWeight').textContent = productWeight;
+            document.getElementById('modalProductPrice').textContent = productPrice;
+            document.getElementById('modalProductStock').textContent = productStock;
+            document.getElementById('modalProductCategory').textContent = productCategory;
+            const statusBadge = document.getElementById('modalProductStatus');
+            statusBadge.textContent = productStatus;
+            statusBadge.className = 'badge ' + (productStatus === 'Active' ? 'bg-success' : 'bg-secondary');
+
+            // Handle image
+            const modalImage = document.getElementById('modalProductImage');
+            const noImageDiv = document.getElementById('modalNoImage');
+            if (productImage && productImage !== "''") {
+                modalImage.src = productImage;
+                modalImage.style.display = 'block';
+                noImageDiv.style.display = 'none';
+            } else {
+                modalImage.style.display = 'none';
+                noImageDiv.style.display = 'flex';
+            }
+
+            // Update Edit and Delete buttons in modal
+            document.getElementById('modalEditButton').setAttribute('onclick', `window.location.href='/dashboard/products/${productId}/update/'`);
+            document.getElementById('modalDeleteButton').setAttribute('onclick', `window.location.href='/dashboard/products/${productId}/delete/'`);
+        });
+    });
 });
 </script>
 {% endblock %}

@@ -138,15 +138,45 @@ def reports_view(request):
     return render(request, "dashboard/reports.html", context)
 
 # ================= Products CRUD =================
-@login_required
-def products_list(request):
-    products = Product.objects.all()
-    return render(request, "dashboard/products.html", {"products": products})
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
+from products.models import Product, Category
+from .forms import ProductForm
+
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
+def products_list(request):
+    products = Product.objects.all().select_related('category')
+    categories = Category.objects.all()
+
+    # حساب الإحصائيات
+    in_stock = products.filter(stock__gt=10).count()
+    low_stock = products.filter(stock__gt=0, stock__lte=10).count()
+    out_of_stock = products.filter(stock=0).count()
+
+    # Pagination
+    paginator = Paginator(products, 5)  # 5 منتجات في الصفحة
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "products": page_obj,
+        "categories": categories,
+        "in_stock": in_stock,
+        "low_stock": low_stock,
+        "out_of_stock": out_of_stock,
+    }
+    return render(request, "dashboard/products.html", context)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
 def product_create(request):
     if request.method == "POST":
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "✅ Product added successfully!")
@@ -155,11 +185,13 @@ def product_create(request):
         form = ProductForm()
     return render(request, "dashboard/product_form.html", {"form": form})
 
+
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
-        form = ProductForm(request.POST, instance=product)
+        form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
             messages.success(request, "✏️ Product updated successfully!")
@@ -168,7 +200,9 @@ def product_update(request, pk):
         form = ProductForm(instance=product)
     return render(request, "dashboard/product_form.html", {"form": form})
 
+
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     product.delete()
