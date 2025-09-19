@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -148,28 +149,11 @@
                                 </div>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-0">{{ product.name }}</h6>
-                                    <small class="text-muted">ID: {{ product.id }}</small>
-                                </div>
-                            </div>
-                        </td>
+                        <td>{{ product.name }}</td>
                         <td>{{ product.brand|default:"-" }}</td>
                         <td>{{ product.weight|default:"-" }}</td>
-                        <td class="fw-bold">${{ product.price }}</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="progress flex-grow-1 me-2" style="height: 6px;">
-                                    <div class="progress-bar {% if product.stock > 10 %}bg-success{% elif product.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                         role="progressbar" style="width: {% widthratio product.stock 50 100 %}%;" 
-                                         aria-valuenow="{{ product.stock }}" aria-valuemin="0" aria-valuemax="50">
-                                    </div>
-                                </div>
-                                <span>{{ product.stock }}</span>
-                            </div>
-                        </td>
+                        <td>${{ product.price }}</td>
+                        <td>{{ product.stock }}</td>
                         <td>{{ product.category.name|default:"Uncategorized" }}</td>
                         <td>
                             {% if product.is_active %}
@@ -180,13 +164,13 @@
                         </td>
                         <td>
                             <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-primary view-details-btn" data-bs-toggle="modal" data-bs-target="#productDetailsModal" data-bs-toggle="tooltip" title="View Details">
+                                <button class="btn btn-sm btn-outline-primary view-details-btn" data-bs-toggle="tooltip" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-success" onclick="window.location.href=&quot;{% url 'product_update' product.id %}&quot;" data-bs-toggle="tooltip" title="Edit Order">
+                                <button class="btn btn-sm btn-outline-success" onclick="window.location.href='{% url 'product_update' product.id %}'">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="window.location.href=&quot;{% url 'product_delete' product.id %}&quot;" data-bs-toggle="tooltip" title="Delete Order">
+                                <button class="btn btn-sm btn-outline-danger" onclick="window.location.href='{% url 'product_delete' product.id %}'">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -204,81 +188,26 @@
             </table>
         </div>
     </div>
-    <div class="card-footer bg-light">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <span class="text-muted" id="selectedCount">0 products selected</span>
-            </div>
-            <div>
-                <button class="btn btn-outline-danger btn-sm" id="bulkDeleteBtn" disabled>
-                    <i class="fas fa-trash me-1"></i> Delete Selected
-                </button>
-            </div>
-        </div>
-    </div>
 </div>
 
-<!-- Pagination -->
-{% if products.has_other_pages %}
-<nav aria-label="Page navigation" class="mt-4">
-    <ul class="pagination justify-content-center">
-        {% if products.has_previous %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ products.previous_page_number }}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-        {% else %}
-        <li class="page-item disabled">
-            <a class="page-link" href="#" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-        {% endif %}
-
-        {% for i in products.paginator.page_range %}
-            {% if products.number == i %}
-            <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
-            {% else %}
-            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
-            {% endif %}
-        {% endfor %}
-
-        {% if products.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
-        {% else %}
-        <li class="page-item disabled">
-            <a class="page-link" href="#" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
-
 <!-- Product Details Modal -->
-<div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsModalLabel" aria-hidden="true">
+<div class="modal fade" id="productDetailsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="productDetailsModalLabel">Product Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Product Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-4">
-                        <img id="modalProductImage" src="" alt="Product Image" class="img-fluid rounded" style="max-width: 100%;">
-                        <div id="modalNoImage" class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 100%; height: 200px; display: none;">
+                        <img id="modalProductImage" class="img-fluid rounded" style="display:none;">
+                        <div id="modalNoImage" class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 200px; display:none;">
                             <i class="fas fa-box text-muted fa-3x"></i>
                         </div>
                     </div>
                     <div class="col-md-8">
-                        <h6>ID: <span id="modalProductId"></span></h6>
+                        <p><strong>ID:</strong> <span id="modalProductId"></span></p>
                         <p><strong>Name:</strong> <span id="modalProductName"></span></p>
                         <p><strong>Brand:</strong> <span id="modalProductBrand"></span></p>
                         <p><strong>Weight:</strong> <span id="modalProductWeight"></span> kg</p>
@@ -290,213 +219,30 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-sm btn-primary" id="modalEditButton" onclick="window.location.href='#'">Edit</button>
-                <button class="btn btn-sm btn-danger" id="modalDeleteButton" onclick="window.location.href='#'">Delete</button>
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-sm btn-primary" id="modalEditButton">Edit</button>
+                <button class="btn btn-sm btn-danger" id="modalDeleteButton">Delete</button>
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-/* تجاوز أنماط الأزرار لتكون فاتحة */
-.btn-outline-primary {
-    color: #3b82f6 !important;
-    border-color: #3b82f6 !important;
-    background-color: transparent !important;
-}
-.btn-outline-primary:hover {
-    color: #fff !important;
-    background-color: #3b82f6 !important;
-}
-
-.btn-outline-success {
-    color: #10b981 !important;
-    border-color: #10b981 !important;
-    background-color: transparent !important;
-}
-.btn-outline-success:hover {
-    color: #fff !important;
-    background-color: #10b981 !important;
-}
-
-.btn-outline-danger {
-    color: #ef4444 !important;
-    border-color: #ef4444 !important;
-    background-color: transparent !important;
-}
-.btn-outline-danger:hover {
-    color: #fff !important;
-    background-color: #ef4444 !important;
-}
-
-/* التأكد من أن الأزرار في الجدول ليست متأثرة بالخلفية الغامقة */
-.btn-group .btn {
-    border-radius: 6px !important;
-    opacity: 1 !important; /* التأكد من أن الأزرار مرئية */
-}
-
-/* استمرار أنماط الصفحة الأصلية */
-.card {
-    border: none;
-    border-radius: 12px;
-}
-
-.table th {
-    border-top: none;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
-    color: #6c757d;
-}
-
-.table td {
-    vertical-align: middle;
-}
-
-.border-start-primary {
-    border-left: 4px solid #4e73df !important;
-}
-
-.border-start-success {
-    border-left: 4px solid #1cc88a !important;
-}
-
-.border-start-warning {
-    border-left: 4px solid #f6c23e !important;
-}
-
-.border-start-danger {
-    border-left: 4px solid #e74a3b !important;
-}
-
-.progress {
-    width: 80px;
-}
-
-#searchInput {
-    border-radius: 8px 0 0 8px;
-}
-
-#clearSearch {
-    border-radius: 0 8px 8px 0;
-}
-
-.pagination .page-link {
-    border-radius: 8px;
-    margin: 0 3px;
-    border: none;
-    color: #6c757d;
-}
-
-.pagination .page-item.active .page-link {
-    background-color: #4e73df;
-    border-color: #4e73df;
-}
-
-.modal-content {
-    border-radius: 12px;
+/* Modal backdrop allows clicks to pass through */
+.modal-backdrop.show {
+    background-color: rgba(0,0,0,0.1) !important;
+    pointer-events: none;
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    const viewButtons = document.querySelectorAll('.view-details-btn');
+    const modalEl = document.getElementById('productDetailsModal');
+    const modalInstance = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
 
-    // Search functionality
-    const searchInput = document.getElementById('searchInput');
-    const clearSearch = document.getElementById('clearSearch');
-    const table = document.getElementById('productsTable');
-    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-
-    searchInput.addEventListener('keyup', function() {
-        const filter = searchInput.value.toLowerCase();
-        for (let i = 0; i < rows.length; i++) {
-            const name = rows[i].getElementsByTagName('td')[2].textContent.toLowerCase();
-            const brand = rows[i].getElementsByTagName('td')[3].textContent.toLowerCase();
-            if (name.includes(filter) || brand.includes(filter)) {
-                rows[i].style.display = '';
-            } else {
-                rows[i].style.display = 'none';
-            }
-        }
-    });
-
-    clearSearch.addEventListener('click', function() {
-        searchInput.value = '';
-        for (let i = 0; i < rows.length; i++) {
-            rows[i].style.display = '';
-        }
-    });
-
-    // Bulk selection
-    const selectAll = document.getElementById('selectAll');
-    const checkboxes = document.querySelectorAll('.product-checkbox');
-    const selectedCount = document.getElementById('selectedCount');
-    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-
-    selectAll.addEventListener('change', function() {
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = selectAll.checked;
-        });
-        updateSelectedCount();
-    });
-
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateSelectedCount);
-    });
-
-    function updateSelectedCount() {
-        const selected = document.querySelectorAll('.product-checkbox:checked');
-        selectedCount.textContent = `${selected.length} products selected`;
-        bulkDeleteBtn.disabled = selected.length === 0;
-    }
-
-    // Bulk delete (placeholder)
-    bulkDeleteBtn.addEventListener('click', function() {
-        const selected = document.querySelectorAll('.product-checkbox:checked');
-        const selectedIds = Array.from(selected).map(checkbox => checkbox.getAttribute('data-id'));
-        if (confirm(`Are you sure you want to delete ${selectedIds.length} products?`)) {
-            console.log('Products to delete:', selectedIds);
-            alert('Bulk delete functionality would be implemented here.');
-        }
-    });
-
-    // Filter functionality
-    const categoryFilter = document.getElementById('categoryFilter');
-    const stockFilter = document.getElementById('stockFilter');
-
-    categoryFilter.addEventListener('change', filterProducts);
-    stockFilter.addEventListener('change', filterProducts);
-
-    function filterProducts() {
-        const categoryValue = categoryFilter.value;
-        const stockValue = stockFilter.value;
-        for (let i = 0; i < rows.length; i++) {
-            const category = rows[i].getElementsByTagName('td')[7].textContent.toLowerCase();
-            const stockStatus = rows[i].getElementsByTagName('td')[6].textContent.toLowerCase();
-            const categoryMatch = !categoryValue || category.includes(categoryValue);
-            const stockMatch = !stockValue || 
-                (stockValue === 'inStock' && parseInt(stockStatus) > 10) ||
-                (stockValue === 'lowStock' && parseInt(stockStatus) > 0 && parseInt(stockStatus) <= 10) ||
-                (stockValue === 'outOfStock' && parseInt(stockStatus) === 0);
-            if (categoryMatch && stockMatch) {
-                rows[i].style.display = '';
-            } else {
-                rows[i].style.display = 'none';
-            }
-        }
-    }
-
-    // View details modal
-    const viewDetailsButtons = document.querySelectorAll('.view-details-btn');
-    viewDetailsButtons.forEach(button => {
-        button.addEventListener('click', function() {
+    viewButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
             const row = this.closest('tr');
             const productId = row.dataset.productId;
             const productName = row.dataset.productName;
@@ -508,7 +254,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const productStatus = row.dataset.productStatus;
             const productImage = row.dataset.productImage;
 
-            // Populate modal fields
             document.getElementById('modalProductId').textContent = productId;
             document.getElementById('modalProductName').textContent = productName;
             document.getElementById('modalProductBrand').textContent = productBrand;
@@ -520,21 +265,21 @@ document.addEventListener('DOMContentLoaded', function() {
             statusBadge.textContent = productStatus;
             statusBadge.className = 'badge ' + (productStatus === 'Active' ? 'bg-success' : 'bg-secondary');
 
-            // Handle image
-            const modalImage = document.getElementById('modalProductImage');
-            const noImageDiv = document.getElementById('modalNoImage');
+            const img = document.getElementById('modalProductImage');
+            const noImg = document.getElementById('modalNoImage');
             if (productImage && productImage !== "''") {
-                modalImage.src = productImage;
-                modalImage.style.display = 'block';
-                noImageDiv.style.display = 'none';
+                img.src = productImage;
+                img.style.display = 'block';
+                noImg.style.display = 'none';
             } else {
-                modalImage.style.display = 'none';
-                noImageDiv.style.display = 'flex';
+                img.style.display = 'none';
+                noImg.style.display = 'flex';
             }
 
-            // Update Edit and Delete buttons in modal
-            document.getElementById('modalEditButton').setAttribute('onclick', `window.location.href='/dashboard/products/${productId}/update/'`);
-            document.getElementById('modalDeleteButton').setAttribute('onclick', `window.location.href='/dashboard/products/${productId}/delete/'`);
+            document.getElementById('modalEditButton').onclick = () => window.location.href = `/dashboard/products/${productId}/update/`;
+            document.getElementById('modalDeleteButton').onclick = () => window.location.href = `/dashboard/products/${productId}/delete/`;
+
+            modalInstance.show();
         });
     });
 });
