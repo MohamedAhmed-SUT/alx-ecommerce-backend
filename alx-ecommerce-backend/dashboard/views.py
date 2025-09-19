@@ -64,24 +64,45 @@ def signup_view(request):
 # ================= Shop Views =================
 @login_required
 def shop_view(request):
+    # جلب كل المنتجات المتاحة
     products = Product.objects.filter(stock__gt=0)
-    if request.method == "POST":
-        product_id = request.POST.get("product_id")
-        quantity = int(request.POST.get("quantity", 1))
-        product = get_object_or_404(Product, id=product_id)
-        if quantity > product.stock:
-            messages.error(request, f"Only {product.stock} items available for {product.name}.")
-            return redirect("shop")
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        if not created:
-            cart_item.quantity += quantity
-        else:
-            cart_item.quantity = quantity
-        cart_item.save()
-        messages.success(request, f"🛒 Added {quantity} × {product.name} to your cart")
-        return redirect("shop")
-    return render(request, "dashboard/shop.html", {"products": products})
+
+    # جلب كل التصنيفات المميزة في المنتجات
+    categories = Category.objects.all()  # من جدول الفئات
+
+    # فلترة حسب التصنيف
+    selected_category = request.GET.get('category', 'all')
+    if selected_category != 'all':
+        products = products.filter(category__name=selected_category)
+
+    # فلترة حسب الحد الأقصى للسعر
+    max_price = request.GET.get('max_price')
+    if max_price:
+        try:
+            max_price = float(max_price)
+            products = products.filter(price__lte=max_price)
+        except ValueError:
+            max_price = None
+
+    # ترتيب المنتجات
+    sort = request.GET.get('sort', 'name')
+    if sort == 'price-low':
+        products = products.order_by('price')
+    elif sort == 'price-high':
+        products = products.order_by('-price')
+    elif sort == 'newest':
+        products = products.order_by('-created_at')
+    else:
+        products = products.order_by('name')
+
+    context = {
+        "products": products,
+        "categories": categories,
+        "selected_category": selected_category,
+        "max_price": max_price or 10000,
+    }
+    return render(request, "dashboard/shop.html", context)
+
 
 # ================= Admin Dashboard =================
 from django.shortcuts import render
