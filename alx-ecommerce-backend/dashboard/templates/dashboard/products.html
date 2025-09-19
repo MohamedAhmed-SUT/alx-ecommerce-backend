@@ -276,8 +276,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 noImg.style.display = 'flex';
             }
 
-            document.getElementById('modalEditButton').onclick = () => window.location.href = `/dashboard/products/${productId}/update/`;
-            document.getElementById('modalDeleteButton').onclick = () => window.location.href = `/dashboard/products/${productId}/delete/`;
+document.getElementById('modalEditButton').onclick = () => {
+    window.location.href = `/dashboard/products/${productId}/edit/`;
+};
+
+document.getElementById('modalDeleteButton').onclick = () => {
+    window.location.href = `/dashboard/products/${productId}/delete/`;
+};
 
             modalInstance.show();
         });
