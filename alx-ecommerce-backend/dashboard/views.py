@@ -9,7 +9,13 @@ from carts.models import Cart, CartItem
 from products.models import Product
 from orders.models import Order, OrderItem
 from .forms import ProductForm, OrderForm, CustomUserCreationForm
-
+from django.db.models import Sum
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
+from products.models import Product, Category
+from .forms import ProductForm
 # ================= Cart Views =================
 @login_required
 def cart_page(request):
@@ -68,7 +74,7 @@ def shop_view(request):
     products = Product.objects.filter(stock__gt=0)
 
     # جلب كل التصنيفات المميزة في المنتجات
-    categories = Category.objects.all()  # من جدول الفئات
+    categories = Category.objects.all()  # تأكد أن Category مستورد
 
     # فلترة حسب التصنيف
     selected_category = request.GET.get('category', 'all')
@@ -95,14 +101,35 @@ def shop_view(request):
     else:
         products = products.order_by('name')
 
+    # حساب عدد العناصر في العربة
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    cart_items_count = cart.items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+
     context = {
         "products": products,
         "categories": categories,
         "selected_category": selected_category,
         "max_price": max_price or 10000,
+        "cart_items_count": cart_items_count,
     }
-    return render(request, "dashboard/shop.html", context)
 
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
+        quantity = int(request.POST.get("quantity", 1))
+        product = get_object_or_404(Product, id=product_id)
+        if quantity > product.stock:
+            messages.error(request, f"Only {product.stock} items available for {product.name}.")
+            return redirect("shop")
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+        if not created:
+            cart_item.quantity += quantity
+        else:
+            cart_item.quantity = quantity
+        cart_item.save()
+        messages.success(request, f"🛒 Added {quantity} × {product.name} to your cart")
+        return redirect("shop")
+
+    return render(request, "dashboard/shop.html", context)
 
 # ================= Admin Dashboard =================
 from django.shortcuts import render
@@ -159,12 +186,7 @@ def reports_view(request):
     return render(request, "dashboard/reports.html", context)
 
 # ================= Products CRUD =================
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.paginator import Paginator
-from products.models import Product, Category
-from .forms import ProductForm
+
 
 
 @login_required

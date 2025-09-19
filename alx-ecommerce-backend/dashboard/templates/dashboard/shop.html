@@ -361,11 +361,12 @@
                 <input type="text" class="form-control" placeholder="Search products..." id="searchInput">
             </div>
             
-            <a href="{% url 'cart-page' %}" class="btn-cart">
-                <i class="fas fa-shopping-cart"></i>
-                Cart
-                <span class="cart-badge" id="cartCount">{{ cart_items_count|default:0 }}</span>
-            </a>
+<a href="{% url 'cart-page' %}" class="btn-cart">
+    <i class="fas fa-shopping-cart"></i>
+    Cart
+    <span class="cart-badge" id="cartCount">{{ cart_items_count }}</span>
+</a>
+
         </div>
     </div>
     
