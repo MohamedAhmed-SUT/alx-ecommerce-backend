@@ -446,7 +446,18 @@
                                         <tr>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <img src="https://via.placeholder.com/80" alt="Product image" class="cart-item-image me-3">
+                                                    {% if item.product.image %}
+    <img 
+        src="{{ item.product.image.url }}" 
+        alt="{{ item.product.name }}" 
+        class="cart-item-image me-3">
+{% else %}
+    <div class="cart-item-image me-3 d-flex align-items-center justify-content-center bg-light text-secondary" 
+         style="font-size: 2rem; border-radius: 8px;">
+        <i class="fas fa-box"></i>
+    </div>
+{% endif %}
+
                                                     <div>
                                                         <h6 class="mb-0">{{ item.product.name }}</h6>
                                                         <small class="text-muted">SKU: {{ item.product.sku }}</small>
