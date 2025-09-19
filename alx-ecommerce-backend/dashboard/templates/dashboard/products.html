@@ -234,7 +234,55 @@
     pointer-events: none;
 }
 </style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const stockFilter = document.getElementById('stockFilter');
+    const table = document.getElementById('productsTable').getElementsByTagName('tbody')[0];
+    const rows = Array.from(table.getElementsByTagName('tr'));
 
+    function filterTable() {
+        const searchText = searchInput.value.toLowerCase();
+        const categoryText = categoryFilter.value.toLowerCase();
+        const stockText = stockFilter.value;
+
+        rows.forEach(row => {
+            const name = row.dataset.productName.toLowerCase();
+            const category = row.dataset.productCategory.toLowerCase();
+            const stock = parseInt(row.dataset.productStock);
+
+            let stockMatch = true;
+            if (stockText === 'inStock') stockMatch = stock > 5;
+            else if (stockText === 'lowStock') stockMatch = stock > 0 && stock <= 5;
+            else if (stockText === 'outOfStock') stockMatch = stock === 0;
+
+            const matchesSearch = name.includes(searchText);
+            const matchesCategory = categoryText === '' || category === categoryText;
+
+            if (matchesSearch && matchesCategory && stockMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    categoryFilter.addEventListener('change', filterTable);
+    stockFilter.addEventListener('change', filterTable);
+
+    clearSearch.addEventListener('click', () => {
+        searchInput.value = '';
+        categoryFilter.value = '';
+        stockFilter.value = '';
+        filterTable();
+    });
+
+    filterTable();
+});
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const viewButtons = document.querySelectorAll('.view-details-btn');
