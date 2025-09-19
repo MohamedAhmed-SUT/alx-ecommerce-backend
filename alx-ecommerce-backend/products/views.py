@@ -27,3 +27,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ['price', 'stock']
     search_fields = ['name', 'description']
     permission_classes = [IsAdminOrReadOnly]  
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from .models import Category
+
+@login_required
+@csrf_exempt
+def ajax_add_category(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        if name:
+            category, created = Category.objects.get_or_create(name=name)
+            return JsonResponse({"id": category.id, "name": category.name})
+    return JsonResponse({"error": "Invalid request"}, status=400)
