@@ -157,7 +157,7 @@ def admin_dashboard(request):
     if start_date:
         orders = orders.filter(created_at__date__gte=start_date)
 
-    # حساب إجمالي المبيعات ديناميكيًا
+    
     total_sales = sum(
         sum(item.price * item.quantity for item in order.items.all())
         for order in orders
@@ -195,13 +195,13 @@ def products_list(request):
     products = Product.objects.all().select_related('category')
     categories = Category.objects.all()
 
-    # حساب الإحصائيات
+
     in_stock = products.filter(stock__gt=10).count()
     low_stock = products.filter(stock__gt=0, stock__lte=10).count()
     out_of_stock = products.filter(stock=0).count()
 
     # Pagination
-    paginator = Paginator(products, 5)  # 5 منتجات في الصفحة
+    paginator = Paginator(products, 5)  
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 

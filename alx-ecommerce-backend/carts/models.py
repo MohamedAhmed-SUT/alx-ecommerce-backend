@@ -7,7 +7,7 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # ✅ أضفنا tax
+    tax = models.DecimalField(max_digits=10, decimal_places=2, default=0)  
 
     def __str__(self):
         return f"Cart {self.id} - {self.user.username}"
@@ -17,7 +17,7 @@ class Cart(models.Model):
 
     @property
     def total_with_shipping(self):
-        shipping = 5  # يمكن تعديل قيمة الشحن حسب النظام
+        shipping = 5  
         return self.total_price() + shipping + self.tax
 
 

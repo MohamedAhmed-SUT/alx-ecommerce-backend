@@ -4,7 +4,7 @@ from carts.models import CartItem, Cart
 
 class CartItemSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(
-        source="product.price",  # يجيب السعر من الـ Product
+        source="product.price", 
         max_digits=10,
         decimal_places=2,
         read_only=True

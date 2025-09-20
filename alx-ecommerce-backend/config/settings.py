@@ -52,7 +52,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],  # إضافة مجلد templates (اختياري)
+        'DIRS': [BASE_DIR / "templates"],  
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -67,7 +67,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database (SQLite مؤقتاً – ممكن تبدله بـ PostgreSQL)
+# Database configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -91,8 +91,8 @@ USE_TZ = True
 
 # Static & Media files
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]  # ملفات static داخل المشروع
-STATIC_ROOT = BASE_DIR / "staticfiles"    # للتجميع عند النشر
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"   
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"

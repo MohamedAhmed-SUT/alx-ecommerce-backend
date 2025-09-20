@@ -23,7 +23,7 @@ def add_to_cart(request, product_id):
             cart_item.quantity = quantity
         cart_item.save()
 
-    return redirect("cart_page")  # يرجع لصفحة السلة بعد الإضافة
+    return redirect("cart_page")  
 
 class CartDetailView(generics.RetrieveAPIView):
     serializer_class = CartSerializer
