@@ -58,7 +58,7 @@ def signup_view(request):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()  # يحفظ كل الحقول مباشرة
+            form.save()  
             messages.success(request, "✅ Account created successfully! Please log in.")
             return redirect("login")
         else:
@@ -70,18 +70,18 @@ def signup_view(request):
 # ================= Shop Views =================
 @login_required
 def shop_view(request):
-    # جلب كل المنتجات المتاحة
+    
     products = Product.objects.filter(stock__gt=0)
 
-    # جلب كل التصنيفات المميزة في المنتجات
-    categories = Category.objects.all()  # تأكد أن Category مستورد
+    
+    categories = Category.objects.all()  
 
-    # فلترة حسب التصنيف
+
     selected_category = request.GET.get('category', 'all')
     if selected_category != 'all':
         products = products.filter(category__name=selected_category)
 
-    # فلترة حسب الحد الأقصى للسعر
+    
     max_price = request.GET.get('max_price')
     if max_price:
         try:
@@ -90,7 +90,7 @@ def shop_view(request):
         except ValueError:
             max_price = None
 
-    # ترتيب المنتجات
+    
     sort = request.GET.get('sort', 'name')
     if sort == 'price-low':
         products = products.order_by('price')
@@ -101,7 +101,7 @@ def shop_view(request):
     else:
         products = products.order_by('name')
 
-    # حساب عدد العناصر في العربة
+    
     cart, _ = Cart.objects.get_or_create(user=request.user)
     cart_items_count = cart.items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
 
