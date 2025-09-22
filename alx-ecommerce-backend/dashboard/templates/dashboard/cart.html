@@ -86,6 +86,7 @@ body {
 .slide-in {animation:slideIn 0.5s ease-out;}
 @keyframes slideIn {from {opacity:0; transform:translateX(-20px);} to {opacity:1; transform:translateX(0);}}
 @media(max-width:768px){.main-container{margin:1rem;padding:1rem;}.navbar-brand{font-size:1.2rem;}.card{margin-bottom:1rem;}.navbar-nav .dropdown-menu{position:absolute; right:0; left:auto;}.cart-item-image{width:60px;height:60px;}.table-responsive{font-size:0.875rem;}}
+
 .cart-item-image{width:80px;height:80px; object-fit:cover; border-radius:8px;}
 .quantity-control{display:flex; align-items:center;}
 .quantity-btn{width:32px;height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; background:#f1f5f9; border:1px solid #e2e8f0; cursor:pointer; transition:var(--transition);}
@@ -188,9 +189,9 @@ body {
                                 </td>
                                 <td class="total">${{ item.total_price }}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-danger remove-item" data-item-id="{{ item.id }}">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
+<button class="btn btn-sm btn-outline-danger remove-item" data-item-id="{{ item.id }}" data-url="{% url 'remove_from_cart' item.id %}">
+    <i class="fas fa-trash-alt"></i>
+</button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -201,7 +202,9 @@ body {
         </div>
         <div class="d-flex justify-content-between">
             <a href="{% url 'shop' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Continue Shopping</a>
-            <button class="btn btn-outline-danger" id="clear-cart"><i class="fas fa-trash me-2"></i>Clear Cart</button>
+<button class="btn btn-outline-danger" id="clear-cart" data-url="{% url 'clear_cart' %}">
+    <i class="fas fa-trash me-2"></i>Clear Cart
+</button>
         </div>
     </div>
 
@@ -254,6 +257,23 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // CSRF token function
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
     // Update totals
     function updateTotals() {
         let subtotal = 0;
@@ -288,10 +308,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Remove item popup
-    document.querySelectorAll('.remove-item').forEach(btn=>{
-        btn.addEventListener('click',function(){
-            const row=this.closest('tr');
-            const itemName=row.querySelector('h6').textContent;
+    document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.dataset.url;
+            const row = this.closest('tr');
+            const itemName = row.querySelector('h6').textContent;
+
             Swal.fire({
                 title:`Remove "${itemName}"?`,
                 text:"This action cannot be undone.",
@@ -301,14 +324,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 cancelButtonColor:'#64748b',
                 confirmButtonText:'Yes, remove it!',
                 cancelButtonText:'Cancel'
-            }).then((result)=>{
-                if(result.isConfirmed){row.remove(); updateTotals(); Swal.fire('Removed!', `"${itemName}" removed.`, 'success');}
+            }).then((result) => {
+                if(result.isConfirmed){
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {'X-CSRFToken': csrftoken}
+                    })
+                    .then(res => window.location.reload())  
+                    .catch(err => console.error(err));
+                }
             });
         });
     });
 
     // Clear cart popup
-    document.getElementById('clear-cart').addEventListener('click',function(){
+    document.getElementById('clear-cart').addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = this.dataset.url;
+
         Swal.fire({
             title:'Clear your cart?',
             text:"All items will be removed.",
@@ -318,11 +351,14 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonColor:'#64748b',
             confirmButtonText:'Yes, clear it!',
             cancelButtonText:'Cancel'
-        }).then((result)=>{
+        }).then((result) => {
             if(result.isConfirmed){
-                document.querySelectorAll('tbody tr').forEach(row=>row.remove());
-                updateTotals();
-                Swal.fire('Cleared!','Your cart is now empty.','success');
+                fetch(url, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrftoken}
+                })
+                .then(res => window.location.reload())
+                .catch(err => console.error(err));
             }
         });
     });
