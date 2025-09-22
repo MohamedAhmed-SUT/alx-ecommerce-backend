@@ -23,14 +23,40 @@
         }
 
         * {margin:0; padding:0; box-sizing:border-box;}
-        body {font-family:'Inter', sans-serif; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; color:#334155;}
+        body {
+            font-family:'Inter', sans-serif;
+            background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh;
+            color:#334155;
+            padding-top: 6rem;   
+        }
 
-        .navbar {background: rgba(30, 41, 59, 0.95) !important; backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); box-shadow: var(--box-shadow);}
-        .navbar-brand {font-weight:700; font-size:1.5rem; background: linear-gradient(45deg,#3b82f6,#8b5cf6); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
+        .navbar {
+            background: rgba(30, 41, 59, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            box-shadow: var(--box-shadow);
+            padding: 0.75rem 1rem; 
+        }
+        .navbar-brand {
+            font-weight:700; font-size:1.5rem;
+            background: linear-gradient(45deg,#3b82f6,#8b5cf6);
+            -webkit-background-clip:text; background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
         .nav-link {font-weight:500; transition: var(--transition); position: relative;}
         .nav-link:hover {color:#3b82f6 !important; transform: translateY(-1px);}
-        .nav-link::after {content:''; position:absolute; width:0; height:2px; bottom:-5px; left:50%; background:linear-gradient(45deg,#3b82f6,#8b5cf6); transition: var(--transition); transform:translateX(-50%);}
+        .nav-link::after {
+            content:''; position:absolute; width:0; height:2px; bottom:-5px; left:50%;
+            background:linear-gradient(45deg,#3b82f6,#8b5cf6);
+            transition: var(--transition); transform:translateX(-50%);
+        }
         .nav-link:hover::after {width:80%;}
+
+        
+        .dropdown-menu {
+            z-index: 2000 !important;
+        }
 
         .main-container {background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: var(--border-radius); box-shadow: var(--box-shadow); margin: 2rem auto; padding:2rem; max-width:1400px;}
         .card {border:none; border-radius: var(--border-radius); box-shadow: var(--box-shadow); transition: var(--transition); overflow:hidden;}
@@ -58,7 +84,12 @@
         .slide-in {animation:slideIn 0.5s ease-out;}
         @keyframes slideIn {from {opacity:0; transform:translateX(-20px);} to {opacity:1; transform:translateX(0);}}
 
-        @media(max-width:768px){.main-container{margin:1rem; padding:1rem;} .navbar-brand{font-size:1.2rem;} .card{margin-bottom:1rem;} .navbar-nav .dropdown-menu{position:absolute; right:0; left:auto;}}
+        @media(max-width:768px){
+            .main-container{margin:1rem; padding:1rem;}
+            .navbar-brand{font-size:1.2rem;}
+            .card{margin-bottom:1rem;}
+            .navbar-nav .dropdown-menu{position:absolute; right:0; left:auto;}
+        }
 
         .spinner {display:none; width:20px; height:20px; border:2px solid #f3f3f3; border-top:2px solid #3b82f6; border-radius:50%; animation:spin 1s linear infinite;}
         @keyframes spin {0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);}}
@@ -68,98 +99,37 @@
         .stat-number {font-size:2.5rem; font-weight:700; margin:0.5rem 0;}
         .stat-icon {font-size:2rem; margin-bottom:1rem;}
 
-
-        /* تأكيد إن المودال في النص */
-.modal.fade .modal-dialog {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 150vh; /* يغطي الشاشة كاملة */
-    transition: transform 0.3s ease-out;
-}
-
-/* محتوى المودال - شكل فاتح */
-.modal-content {
-    background: #ffffff !important; /* أبيض صافي */
-    border-radius: 16px;
-    border: none;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-    color: #1f2937; /* رمادي غامق أنيق */
-    padding: 1rem 1.5rem;
-}
-
-/* الهيدر */
-.modal-header {
-    border-bottom: 1px solid #f1f5f9;
-    background: #f9fafb;
-    border-radius: 16px 16px 0 0;
-}
-
-/* الفوتر */
-.modal-footer {
-    border-top: 1px solid #f1f5f9;
-    background: #f9fafb;
-    border-radius: 0 0 16px 16px;
-}
-
-/* زر الإغلاق */
-.btn-close {
-    filter: brightness(0.5);
-}
-.btn-close:hover {
-    filter: brightness(0.2);
-}
-
-/* الخلفية ورا المودال */
-.modal-backdrop.show {
-    opacity: 0.6 !important;
-    background-color: #000 !important;
-}
-
-/* انيميشن دخول المودال */
-.modal.fade .modal-dialog {
-    transform: translateY(-30px);
-    opacity: 0;
-}
-.modal.show .modal-dialog {
-    transform: translateY(0);
-    opacity: 1;
-    transition: all 0.3s ease-in-out;
-}
-
+        
+        .modal.fade .modal-dialog {display: flex; align-items: center; justify-content: center; min-height: 150vh; transition: transform 0.3s ease-out;}
+        .modal-content {background: #ffffff !important; border-radius: 16px; border: none; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); color: #1f2937; padding: 1rem 1.5rem;}
+        .modal-header {border-bottom: 1px solid #f1f5f9; background: #f9fafb; border-radius: 16px 16px 0 0;}
+        .modal-footer {border-top: 1px solid #f1f5f9; background: #f9fafb; border-radius: 0 0 16px 16px;}
+        .btn-close {filter: brightness(0.5);}
+        .btn-close:hover {filter: brightness(0.2);}
+        .modal-backdrop.show {opacity: 0.6 !important; background-color: #000 !important;}
+        .modal.fade .modal-dialog {transform: translateY(-30px); opacity: 0;}
+        .modal.show .modal-dialog {transform: translateY(0); opacity: 1; transition: all 0.3s ease-in-out;}
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container-fluid">
-            
             <a class="navbar-brand" href="{% if user.is_authenticated %}{% if user.is_staff %}{% url 'dashboard_home' %}{% else %}{% url 'shop' %}{% endif %}{% else %}{% url 'login' %}{% endif %}">
                 <i class="fas fa-store"></i> E-Commerce
             </a>
-            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated and user.is_staff %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard_home' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'products_list' %}"><i class="fas fa-box"></i> Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'orders_list' %}"><i class="fas fa-shopping-cart"></i> Orders</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_home' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'products_list' %}"><i class="fas fa-box"></i> Products</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'orders_list' %}"><i class="fas fa-shopping-cart"></i> Orders</a></li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'shop' %}"><i class="fas fa-shopping-bag"></i> Shop</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'shop' %}"><i class="fas fa-shopping-bag"></i> Shop</a></li>
                 </ul>
-                
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
@@ -187,13 +157,11 @@
     <div class="container-fluid">
         <div class="main-container fade-in">
             {% block content %}
-            <!-- Example: Recent Orders with clock & period filter -->
             <div class="row mb-4">
                 <div class="col-12 d-flex justify-content-between align-items-center mb-3">
                     <h1 class="display-5 fw-bold">Recent Orders</h1>
                     <span id="clock" class="text-muted small"></span>
                 </div>
-
                 <div class="col-12 mb-3">
                     <form method="get" class="d-flex justify-content-end">
                         <select name="period" class="form-select w-auto" onchange="this.form.submit()">
@@ -205,7 +173,6 @@
                     </form>
                 </div>
             </div>
-
             {% endblock %}
         </div>
     </div>
@@ -213,7 +180,6 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Live Clock
         function updateClock() {
             const now = new Date();
             const options = { weekday:'short', year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' };
@@ -221,16 +187,7 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
-
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({behavior:'smooth'});
-            });
-        });
     </script>
-    
     {% block extra_js %}{% endblock %}
 </body>
 </html>
