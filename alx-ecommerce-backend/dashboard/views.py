@@ -103,7 +103,7 @@ def shop_view(request):
 
     
     cart, _ = Cart.objects.get_or_create(user=request.user)
-    cart_items_count = cart.items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
+    cart_items_count = cart.items.count()
 
     context = {
         "products": products,
