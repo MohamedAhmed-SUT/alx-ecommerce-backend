@@ -1,276 +1,335 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Cart - E-Commerce Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #64748b;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --dark-color: #1e293b;
-            --light-color: #f8fafc;
-            --border-radius: 12px;
-            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {margin:0; padding:0; box-sizing:border-box;}
-        body {font-family:'Inter', sans-serif; background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; color:#334155; padding-top:6rem;}
-
-        /* Navbar */
-        .navbar {background: rgba(30,41,59,0.95) !important; backdrop-filter: blur(10px); border-bottom:1px solid rgba(255,255,255,0.1); box-shadow: var(--box-shadow); padding:0.75rem 1rem;}
-        .navbar-brand {font-weight:700; font-size:1.5rem; background:linear-gradient(45deg,#3b82f6,#8b5cf6); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;}
-        .nav-link {font-weight:500; transition:var(--transition); position:relative;}
-        .nav-link:hover {color:#3b82f6 !important; transform:translateY(-1px);}
-        .nav-link::after {content:''; position:absolute; width:0; height:2px; bottom:-5px; left:50%; background:linear-gradient(45deg,#3b82f6,#8b5cf6); transition:var(--transition); transform:translateX(-50%);}
-        .nav-link:hover::after {width:80%;}
-
-        /* Main container */
-        .main-container {background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: var(--border-radius); box-shadow: var(--box-shadow); margin:2rem auto; padding:2rem; max-width:1400px;}
-
-        /* Card & Table */
-        .card {border:none; border-radius: var(--border-radius); box-shadow: var(--box-shadow); transition: var(--transition); overflow:hidden;}
-        .card:hover {transform: translateY(-5px); box-shadow:0 10px 25px -5px rgba(0,0,0,0.2);}
-        .table {background:white; border-radius: var(--border-radius); overflow:hidden; box-shadow: var(--box-shadow);}
-        .table th {background: linear-gradient(45deg,#1e293b,#334155); color:white; font-weight:600; border:none; padding:1rem;}
-        .table td {padding:1rem; vertical-align:middle; border-color:#e2e8f0;}
-        .table tbody tr {transition: var(--transition);}
-        .table tbody tr:hover {background-color:#f8fafc; transform:scale(1.01);}
-
-        /* Buttons */
-        .btn {border-radius:8px; font-weight:500; transition:var(--transition); border:none; position:relative; overflow:hidden;}
-        .btn::before {content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:left 0.5s;}
-        .btn:hover::before {left:100%;}
-        .btn-primary {background:linear-gradient(45deg,#3b82f6,#1d4ed8);}
-        .btn-success {background:linear-gradient(45deg,#10b981,#059669);}
-        .btn-warning {background:linear-gradient(45deg,#f59e0b,#d97706);}
-        .btn-danger {background:linear-gradient(45deg,#ef4444,#dc2626);}
-
-        /* Form */
-        .form-control, .form-select {border-radius:8px; border:2px solid #e2e8f0; transition:var(--transition); padding:0.75rem 1rem;}
-        .form-control:focus, .form-select:focus {border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); transform:translateY(-1px);}
-
-        /* Responsive */
-        @media(max-width:768px){
-            .main-container{margin:1rem; padding:1rem;}
-            .navbar-brand{font-size:1.2rem;}
-            .card{margin-bottom:1rem;}
-            .navbar-nav .dropdown-menu{position:absolute; right:0; left:auto;}
-            .cart-item-image{width:60px; height:60px;}
-            .table-responsive{font-size:0.875rem;}
-        }
-
-        .cart-item-image {width:80px; height:80px; object-fit:cover; border-radius:8px;}
-        .quantity-control {display:flex; align-items:center;}
-        .quantity-btn {width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; background:#f1f5f9; border:1px solid #e2e8f0; cursor:pointer; transition:var(--transition);}
-        .quantity-btn:hover {background:#e2e8f0;}
-        .quantity-input {width:50px; text-align:center; margin:0 8px; border:1px solid #e2e8f0; border-radius:6px; padding:4px;}
-        .empty-cart {text-align:center; padding:3rem;}
-        .empty-cart-icon {font-size:4rem; color:#cbd5e1; margin-bottom:1rem;}
-        .summary-card {position:sticky; top:20px;}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Cart - E-Commerce Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --dark-color: #1e293b;
+    --light-color: #f8fafc;
+    --border-radius: 12px;
+    --box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+* {margin:0; padding:0; box-sizing:border-box;}
+body {
+    font-family:'Inter', sans-serif;
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    min-height:100vh;
+    color:#334155;
+    padding-top:6rem;
+}
+/* Navbar */
+.navbar {
+    background: rgba(30,41,59,0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid rgba(255,255,255,0.1);
+    box-shadow: var(--box-shadow);
+}
+.navbar-brand {
+    font-weight:700;
+    font-size:1.5rem;
+    background: linear-gradient(45deg,#3b82f6,#8b5cf6);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+}
+.nav-link {font-weight:500; transition: var(--transition); position: relative;}
+.nav-link:hover {color:#3b82f6 !important; transform: translateY(-1px);}
+.nav-link::after {
+    content:''; position:absolute; width:0; height:2px; bottom:-5px; left:50%;
+    background:linear-gradient(45deg,#3b82f6,#8b5cf6);
+    transition: var(--transition); transform:translateX(-50%);
+}
+.nav-link:hover::after {width:80%;}
+/* Main container */
+.main-container {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin: 2rem auto;
+    padding: 2rem;
+    max-width: 1400px;
+}
+/* Card */
+.card {border:none; border-radius: var(--border-radius); box-shadow: var(--box-shadow); transition: var(--transition); overflow:hidden;}
+.card:hover {transform: translateY(-5px); box-shadow:0 10px 25px -5px rgba(0,0,0,0.2);}
+/* Buttons */
+.btn {border-radius:8px; font-weight:500; transition: var(--transition); border:none; position:relative; overflow:hidden;}
+.btn::before {content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:left 0.5s;}
+.btn:hover::before {left:100%;}
+.btn-primary {background:linear-gradient(45deg,#3b82f6,#1d4ed8);}
+.btn-success {background:linear-gradient(45deg,#10b981,#059669);}
+.btn-warning {background:linear-gradient(45deg,#f59e0b,#d97706);}
+.btn-danger {background:linear-gradient(45deg,#ef4444,#dc2626);}
+/* Table */
+.table {background:white; border-radius: var(--border-radius); overflow:hidden; box-shadow: var(--box-shadow);}
+.table th {background: linear-gradient(45deg,#1e293b,#334155); color:white; font-weight:600; border:none; padding:1rem;}
+.table td {padding:1rem; vertical-align:middle; border-color:#e2e8f0;}
+.table tbody tr {transition: var(--transition);}
+.table tbody tr:hover {background-color:#f8fafc; transform:scale(1.01);}
+/* Form controls */
+.form-control, .form-select {border-radius:8px; border:2px solid #e2e8f0; transition:var(--transition); padding:0.75rem 1rem;}
+.form-control:focus, .form-select:focus {border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.1); transform:translateY(-1px);}
+.fade-in {animation:fadeIn 0.6s ease-out;}
+@keyframes fadeIn {from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);}}
+.slide-in {animation:slideIn 0.5s ease-out;}
+@keyframes slideIn {from {opacity:0; transform:translateX(-20px);} to {opacity:1; transform:translateX(0);}}
+@media(max-width:768px){.main-container{margin:1rem;padding:1rem;}.navbar-brand{font-size:1.2rem;}.card{margin-bottom:1rem;}.navbar-nav .dropdown-menu{position:absolute; right:0; left:auto;}.cart-item-image{width:60px;height:60px;}.table-responsive{font-size:0.875rem;}}
+.cart-item-image{width:80px;height:80px; object-fit:cover; border-radius:8px;}
+.quantity-control{display:flex; align-items:center;}
+.quantity-btn{width:32px;height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; background:#f1f5f9; border:1px solid #e2e8f0; cursor:pointer; transition:var(--transition);}
+.quantity-btn:hover{background:#e2e8f0;}
+.quantity-input{width:50px; text-align:center; margin:0 8px; border:1px solid #e2e8f0; border-radius:6px; padding:4px;}
+.empty-cart{text-align:center; padding:3rem;}
+.empty-cart-icon{font-size:4rem; color:#cbd5e1; margin-bottom:1rem;}
+.summary-card{position:sticky; top:20px;}
+</style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'dashboard_home' %}"><i class="fas fa-store"></i> E-Commerce</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    {% if user.is_authenticated and user.is_staff %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'dashboard_home' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'products_list' %}"><i class="fas fa-box"></i> Products</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'orders_list' %}"><i class="fas fa-shopping-cart"></i> Orders</a></li>
-                    {% endif %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'shop' %}"><i class="fas fa-shopping-bag"></i> Shop</a></li>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+<div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'dashboard_home' %}"><i class="fas fa-store"></i> E-Commerce</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+            <li class="nav-item"><a class="nav-link" href="{% url 'shop' %}"><i class="fas fa-shopping-bag"></i> Shop</a></li>
+        </ul>
+        <ul class="navbar-nav">
+        {% if user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-circle"></i> {{ user.username }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{% url 'cart_page' %}"><i class="fas fa-shopping-cart"></i> My Cart</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                 </ul>
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle"></i> {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{% url 'cart_page' %}"><i class="fas fa-shopping-cart"></i> My Cart</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Sign Up</a></li>
-                    {% endif %}
-                </ul>
+            </li>
+        {% else %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}"><i class="fas fa-user-plus"></i> Sign Up</a></li>
+        {% endif %}
+        </ul>
+    </div>
+</div>
+</nav>
+
+<!-- Main Content -->
+<div class="container-fluid">
+<div class="main-container fade-in">
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 fw-bold"><i class="fas fa-shopping-cart me-2"></i>My Cart</h1>
+        <p class="text-muted">Review and manage your shopping cart items</p>
+    </div>
+</div>
+
+{% if items %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Cart Items</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in items %}
+                            <tr data-item-id="{{ item.id }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image me-3">
+                                    {% else %}
+                                        <div class="cart-item-image me-3 d-flex align-items-center justify-content-center bg-light text-secondary" style="font-size:2rem; border-radius:8px;">
+                                            <i class="fas fa-box"></i>
+                                        </div>
+                                    {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ item.product.name }}</h6>
+                                            <small class="text-muted">SKU: {{ item.product.sku }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="price">${{ item.product.price }}</td>
+                                <td>
+                                    <div class="quantity-control">
+                                        <button class="quantity-btn decrease" data-item-id="{{ item.id }}">-</button>
+                                        <input type="number" class="quantity-input" value="{{ item.quantity }}" min="1" data-item-id="{{ item.id }}">
+                                        <button class="quantity-btn increase" data-item-id="{{ item.id }}">+</button>
+                                    </div>
+                                </td>
+                                <td class="total">${{ item.total_price }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger remove-item" data-item-id="{{ item.id }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container-fluid">
-        <div class="main-container fade-in">
-            <div class="row mb-4">
-                <div class="col-12">
-                    <h1 class="display-5 fw-bold"><i class="fas fa-shopping-cart me-2"></i>My Cart</h1>
-                    <p class="text-muted">Review and manage your shopping cart items</p>
-                </div>
-            </div>
-
-            {% if items %}
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="card mb-4">
-                        <div class="card-header bg-white">
-                            <h5 class="card-title mb-0">Cart Items</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Price</th>
-                                            <th>Quantity</th>
-                                            <th>Total</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for item in items %}
-                                        <tr data-item-id="{{ item.id }}" data-price="{{ item.product.price }}">
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    {% if item.product.image %}
-                                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image me-3">
-                                                    {% else %}
-                                                        <div class="cart-item-image me-3 d-flex align-items-center justify-content-center bg-light text-secondary" style="font-size: 2rem; border-radius: 8px;">
-                                                            <i class="fas fa-box"></i>
-                                                        </div>
-                                                    {% endif %}
-                                                    <div>
-                                                        <h6 class="mb-0">{{ item.product.name }}</h6>
-                                                        <small class="text-muted">SKU: {{ item.product.sku }}</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>${{ item.product.price }}</td>
-                                            <td>
-                                                <div class="quantity-control">
-                                                    <button class="quantity-btn decrease" data-item-id="{{ item.id }}">-</button>
-                                                    <input type="number" class="quantity-input" value="{{ item.quantity }}" min="1" data-item-id="{{ item.id }}">
-                                                    <button class="quantity-btn increase" data-item-id="{{ item.id }}">+</button>
-                                                </div>
-                                            </td>
-                                            <td class="item-total"><strong>${{ item.total_price }}</strong></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-danger remove-item" data-item-id="{{ item.id }}">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'shop' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Continue Shopping</a>
-                        <button class="btn btn-outline-danger" id="clear-cart"><i class="fas fa-trash me-2"></i>Clear Cart</button>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="card summary-card">
-                        <div class="card-header bg-white">
-                            <h5 class="card-title mb-0">Order Summary</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Subtotal:</span>
-                                <span id="subtotal">${{ cart.total_price }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Shipping:</span>
-                                <span>$5.00</span>
-                            </div>
-                            <hr>
-                            <div class="d-flex justify-content-between mb-3">
-                                <strong>Total:</strong>
-                                <strong id="total">${{ cart.total_with_shipping }}</strong>
-                            </div>
-                            <form method="post" action="{% url 'checkout' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-primary w-100 py-2 mb-3"><i class="fas fa-lock me-2"></i>Proceed to Checkout</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="card">
-                <div class="card-body empty-cart">
-                    <div class="empty-cart-icon"><i class="fas fa-shopping-cart"></i></div>
-                    <h4>Your cart is empty</h4>
-                    <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
-                    <a href="{% url 'shop' %}" class="btn btn-primary"><i class="fas fa-shopping-bag me-2"></i>Start Shopping</a>
-                </div>
-            </div>
-            {% endif %}
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'shop' %}" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Continue Shopping</a>
+            <button class="btn btn-outline-danger" id="clear-cart"><i class="fas fa-trash me-2"></i>Clear Cart</button>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="col-lg-4">
+        <div class="card summary-card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Order Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">${{ cart.total_price }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Shipping:</span>
+                    <span>$5.00</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tax:</span>
+                    <span>${{ cart.tax|default:"0.00" }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3">
+                    <strong>Total:</strong>
+                    <strong id="total">${{ cart.total_with_shipping }}</strong>
+                </div>
+                <form method="post" action="{% url 'checkout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3"><i class="fas fa-lock me-2"></i>Proceed to Checkout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body empty-cart">
+        <div class="empty-cart-icon"><i class="fas fa-shopping-cart"></i></div>
+        <h4>Your cart is empty</h4>
+        <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
+        <a href="{% url 'shop' %}" class="btn btn-primary"><i class="fas fa-shopping-bag me-2"></i>Start Shopping</a>
+    </div>
+</div>
+{% endif %}
+</div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function updateTotals() {
-                let subtotal = 0;
-                document.querySelectorAll('tbody tr').forEach(row => {
-                    const price = parseFloat(row.dataset.price);
-                    const quantity = parseInt(row.querySelector('.quantity-input').value);
-                    subtotal += price * quantity;
-                    row.querySelector('.item-total strong').textContent = '$' + (price * quantity).toFixed(2);
-                });
-                document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
-                const total = subtotal + 5; // Shipping $5
-                document.getElementById('total').textContent = '$' + total.toFixed(2);
-            }
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update totals
+    function updateTotals() {
+        let subtotal = 0;
+        document.querySelectorAll('tbody tr').forEach(row => {
+            const price = parseFloat(row.querySelector('.price').textContent.replace('$',''));
+            const qty = parseInt(row.querySelector('.quantity-input').value);
+            const total = price * qty;
+            row.querySelector('.total').textContent = '$'+total.toFixed(2);
+            subtotal += total;
+        });
+        document.getElementById('subtotal').textContent = '$'+subtotal.toFixed(2);
+        const shipping = 5;
+        const tax = parseFloat('{{ cart.tax|default:"0.00" }}');
+        document.getElementById('total').textContent = '$'+(subtotal+shipping+tax).toFixed(2);
+    }
 
-            document.querySelectorAll('.quantity-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const row = this.closest('tr');
-                    const input = row.querySelector('.quantity-input');
-                    let value = parseInt(input.value);
-                    if (this.classList.contains('increase')) value++;
-                    if (this.classList.contains('decrease') && value > 1) value--;
-                    input.value = value;
-                    updateTotals();
-                });
-            });
-
-            document.querySelectorAll('.quantity-input').forEach(input => {
-                input.addEventListener('input', function() {
-                    if (this.value < 1) this.value = 1;
-                    updateTotals();
-                });
-            });
-
+    // Quantity controls
+    document.querySelectorAll('.quantity-btn.increase').forEach(btn=>{
+        btn.addEventListener('click',function(){
+            const itemId=this.dataset.itemId;
+            const input=document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
+            input.value=parseInt(input.value)+1;
             updateTotals();
         });
-    </script>
+    });
+    document.querySelectorAll('.quantity-btn.decrease').forEach(btn=>{
+        btn.addEventListener('click',function(){
+            const itemId=this.dataset.itemId;
+            const input=document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
+            if(parseInt(input.value)>1){input.value=parseInt(input.value)-1; updateTotals();}
+        });
+    });
+
+    // Remove item popup
+    document.querySelectorAll('.remove-item').forEach(btn=>{
+        btn.addEventListener('click',function(){
+            const row=this.closest('tr');
+            const itemName=row.querySelector('h6').textContent;
+            Swal.fire({
+                title:`Remove "${itemName}"?`,
+                text:"This action cannot be undone.",
+                icon:'warning',
+                showCancelButton:true,
+                confirmButtonColor:'#ef4444',
+                cancelButtonColor:'#64748b',
+                confirmButtonText:'Yes, remove it!',
+                cancelButtonText:'Cancel'
+            }).then((result)=>{
+                if(result.isConfirmed){row.remove(); updateTotals(); Swal.fire('Removed!', `"${itemName}" removed.`, 'success');}
+            });
+        });
+    });
+
+    // Clear cart popup
+    document.getElementById('clear-cart').addEventListener('click',function(){
+        Swal.fire({
+            title:'Clear your cart?',
+            text:"All items will be removed.",
+            icon:'warning',
+            showCancelButton:true,
+            confirmButtonColor:'#ef4444',
+            cancelButtonColor:'#64748b',
+            confirmButtonText:'Yes, clear it!',
+            cancelButtonText:'Cancel'
+        }).then((result)=>{
+            if(result.isConfirmed){
+                document.querySelectorAll('tbody tr').forEach(row=>row.remove());
+                updateTotals();
+                Swal.fire('Cleared!','Your cart is now empty.','success');
+            }
+        });
+    });
+
+    // Initial totals calculation
+    updateTotals();
+});
+</script>
 </body>
 </html>
