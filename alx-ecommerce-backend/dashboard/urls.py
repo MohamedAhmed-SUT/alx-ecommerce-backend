@@ -17,7 +17,8 @@ urlpatterns = [
     path('orders/create/', views.order_create, name="order_create"),
     path('orders/<int:pk>/update/', views.order_update, name="order_update"),
     path("orders/export/", views.export_orders_csv, name="export_orders_csv"),
-
+    path("bulk/update/", views.bulk_update_orders, name="bulk_update_orders"),
+    path("bulk/delete/", views.bulk_delete_orders, name="bulk_delete_orders"),
 
     # Users Management
     path('users/', views.users_list, name="users_list"),

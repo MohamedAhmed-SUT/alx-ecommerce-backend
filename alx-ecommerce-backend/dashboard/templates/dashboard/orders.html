@@ -184,7 +184,7 @@
 {% endif %}
 
 <!-- Order Details Modal -->
-<div class="modal fade" id="orderDetailsModal" tabindex="-1">
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -204,7 +204,7 @@
 </div>
 
 <!-- Delete Modal -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -225,7 +225,7 @@
 <!-- Scripts -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Select All
+    // ================= Select All =================
     const selectAll = document.getElementById("selectAll");
     const checkboxes = document.querySelectorAll(".order-checkbox");
     selectAll.addEventListener("change", () => {
@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("bulkActionsDropdown").style.display = anyChecked ? "inline-block" : "none";
     }
 
-    // Delete
+    // ================= Delete =================
     let deleteId = null;
     document.querySelectorAll(".delete-btn").forEach(btn => {
         btn.addEventListener("click", function() {
@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // View Details (dummy demo)
+    // ================= View Details =================
     document.querySelectorAll(".view-details-btn").forEach(btn => {
         btn.addEventListener("click", function() {
             const tr = this.closest("tr");
@@ -268,6 +268,95 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("modalStatus").textContent = tr.children[5].innerText.trim();
             new bootstrap.Modal(document.getElementById("orderDetailsModal")).show();
         });
+    });
+
+    // ================= Filters =================
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const dateFilter = document.getElementById("dateFilter");
+    const tableRows = document.querySelectorAll("#ordersTable tbody tr");
+
+    function filterTable() {
+        const searchValue = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value.toLowerCase();
+        const dateValue = dateFilter.value;
+
+        tableRows.forEach(row => {
+            const id = row.children[1].innerText.toLowerCase();
+            const customer = row.children[2].innerText.toLowerCase();
+            const date = row.children[3].innerText;
+            const status = row.children[5].innerText.toLowerCase();
+
+            let visible = true;
+
+            if (searchValue && !id.includes(searchValue) && !customer.includes(searchValue)) {
+                visible = false;
+            }
+            if (statusValue && !status.includes(statusValue)) {
+                visible = false;
+            }
+            if (dateValue) {
+                const orderDate = new Date(date);
+                const today = new Date();
+                if (dateValue === "today" && orderDate.toDateString() !== today.toDateString()) {
+                    visible = false;
+                } else if (dateValue === "week") {
+                    const weekAgo = new Date();
+                    weekAgo.setDate(today.getDate() - 7);
+                    if (orderDate < weekAgo) visible = false;
+                } else if (dateValue === "month") {
+                    if (orderDate.getMonth() !== today.getMonth()) visible = false;
+                }
+            }
+
+            row.style.display = visible ? "" : "none";
+        });
+    }
+
+    searchInput.addEventListener("keyup", filterTable);
+    statusFilter.addEventListener("change", filterTable);
+    dateFilter.addEventListener("change", filterTable);
+    document.getElementById("clearSearch").addEventListener("click", () => {
+        searchInput.value = "";
+        filterTable();
+    });
+
+    // ================= Bulk Actions =================
+    function getSelectedIds() {
+        return [...document.querySelectorAll(".order-checkbox:checked")].map(cb => cb.dataset.id);
+    }
+
+    document.getElementById("bulkMarkCompleted").addEventListener("click", function() {
+        const ids = getSelectedIds();
+        if (ids.length) {
+            fetch("/orders/bulk/update/", {
+                method: "POST",
+                headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+                body: JSON.stringify({ids: ids, status: "Completed"})
+            }).then(() => location.reload());
+        }
+    });
+
+    document.getElementById("bulkMarkProcessing").addEventListener("click", function() {
+        const ids = getSelectedIds();
+        if (ids.length) {
+            fetch("/orders/bulk/update/", {
+                method: "POST",
+                headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+                body: JSON.stringify({ids: ids, status: "Processing"})
+            }).then(() => location.reload());
+        }
+    });
+
+    document.getElementById("bulkDelete").addEventListener("click", function() {
+        const ids = getSelectedIds();
+        if (ids.length && confirm("Delete selected orders?")) {
+            fetch("/orders/bulk/delete/", {
+                method: "POST",
+                headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+                body: JSON.stringify({ids: ids})
+            }).then(() => location.reload());
+        }
     });
 });
 </script>

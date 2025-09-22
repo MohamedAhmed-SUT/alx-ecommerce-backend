@@ -6,13 +6,18 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.utils.timezone import now, timedelta
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 import csv
+import json
 
+# Models & Forms
+from orders.models import Order, OrderItem
 from carts.models import Cart, CartItem
 from products.models import Product, Category
-from orders.models import Order, OrderItem
 from .forms import ProductForm, OrderForm, CustomUserCreationForm
+
 
 # ================= Cart Views =================
 @login_required
@@ -21,17 +26,20 @@ def cart_page(request):
     items = cart.items.select_related("product")
     return render(request, "dashboard/cart.html", {"cart": cart, "items": items})
 
+
 @login_required
 def clear_cart(request):
     cart = get_object_or_404(Cart, user=request.user)
     cart.items.all().delete()
     return redirect("cart_page")
 
+
 @login_required
 def remove_from_cart(request, item_id):
     item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     item.delete()
     return redirect("cart_page")
+
 
 # ================= Authentication Views =================
 def login_view(request):
@@ -45,16 +53,18 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, "dashboard/login.html", {"form": form})
 
+
 @login_required
 def logout_view(request):
     logout(request)
     return redirect("login")
 
+
 def signup_view(request):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()  
+            form.save()
             messages.success(request, "✅ Account created successfully! Please log in.")
             return redirect("login")
         else:
@@ -63,11 +73,12 @@ def signup_view(request):
         form = CustomUserCreationForm()
     return render(request, "dashboard/signup.html", {"form": form})
 
+
 # ================= Shop Views =================
 @login_required
 def shop_view(request):
     products = Product.objects.filter(stock__gt=0)
-    categories = Category.objects.all()  
+    categories = Category.objects.all()
 
     # filters
     selected_category = request.GET.get("category", "all")
@@ -118,6 +129,7 @@ def shop_view(request):
     }
     return render(request, "dashboard/shop.html", context)
 
+
 # ================= Admin Dashboard =================
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -152,6 +164,7 @@ def admin_dashboard(request):
     }
     return render(request, "dashboard/admin_dashboard.html", context)
 
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def reports_view(request):
@@ -161,6 +174,7 @@ def reports_view(request):
         for order in orders
     )
     return render(request, "dashboard/reports.html", {"orders": orders, "total_sales": total_sales})
+
 
 # ================= Products CRUD =================
 @login_required
@@ -186,6 +200,7 @@ def products_list(request):
     }
     return render(request, "dashboard/products.html", context)
 
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def product_create(request):
@@ -198,6 +213,7 @@ def product_create(request):
     else:
         form = ProductForm()
     return render(request, "dashboard/product_form.html", {"form": form})
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -213,6 +229,7 @@ def product_update(request, pk):
         form = ProductForm(instance=product)
     return render(request, "dashboard/product_form.html", {"form": form})
 
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def product_delete(request, pk):
@@ -221,7 +238,43 @@ def product_delete(request, pk):
     messages.success(request, "🗑️ Product deleted successfully!")
     return redirect("products_list")
 
+
 # ================= Orders =================
+@csrf_exempt
+@require_POST
+def bulk_update_orders(request):
+    """Update status for multiple orders"""
+    try:
+        data = json.loads(request.body)
+        ids = data.get("ids", [])
+        status = data.get("status", None)
+
+        if not ids or not status:
+            return JsonResponse({"error": "Invalid data"}, status=400)
+
+        Order.objects.filter(id__in=ids).update(status=status)
+        return JsonResponse({"message": "Orders updated successfully"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_POST
+def bulk_delete_orders(request):
+    """Delete multiple orders"""
+    try:
+        data = json.loads(request.body)
+        ids = data.get("ids", [])
+
+        if not ids:
+            return JsonResponse({"error": "No IDs provided"}, status=400)
+
+        Order.objects.filter(id__in=ids).delete()
+        return JsonResponse({"message": "Orders deleted successfully"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
 @login_required
 def orders_list(request):
     if request.user.is_staff:
@@ -242,6 +295,7 @@ def orders_list(request):
     }
     return render(request, "dashboard/orders.html", context)
 
+
 @login_required
 def order_create(request):
     if request.method == "POST":
@@ -255,6 +309,7 @@ def order_create(request):
     else:
         form = OrderForm()
     return render(request, "dashboard/order_form.html", {"form": form})
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -270,6 +325,7 @@ def order_update(request, pk):
         form = OrderForm(instance=order)
     return render(request, "dashboard/order_form.html", {"form": form})
 
+
 @login_required
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
@@ -277,11 +333,14 @@ def checkout(request):
         return redirect("cart_page")
     order = Order.objects.create(user=request.user, status="Pending")
     for item in cart.items.all():
-        OrderItem.objects.create(order=order, product=item.product, quantity=item.quantity, price=item.product.price)
+        OrderItem.objects.create(
+            order=order, product=item.product, quantity=item.quantity, price=item.product.price
+        )
         item.product.stock -= item.quantity
         item.product.save()
     cart.items.all().delete()
     return redirect("orders_list")
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -302,12 +361,14 @@ def export_orders_csv(request):
         ])
     return response
 
+
 # ================= Users Management (Admin Only) =================
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def users_list(request):
     users = User.objects.all()
     return render(request, "dashboard/users.html", {"users": users})
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -320,6 +381,7 @@ def user_update_role(request, pk):
         messages.success(request, f"✅ Role for {user.username} updated successfully!")
         return redirect("users_list")
     return render(request, "dashboard/user_role_form.html", {"user": user})
+
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
