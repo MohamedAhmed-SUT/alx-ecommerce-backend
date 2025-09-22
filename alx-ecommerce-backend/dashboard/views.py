@@ -5,17 +5,15 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.utils.timezone import now, timedelta
+from django.core.paginator import Paginator
+from django.http import HttpResponse
+import csv
+
 from carts.models import Cart, CartItem
-from products.models import Product
+from products.models import Product, Category
 from orders.models import Order, OrderItem
 from .forms import ProductForm, OrderForm, CustomUserCreationForm
-from django.db.models import Sum
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.paginator import Paginator
-from products.models import Product, Category
-from .forms import ProductForm
+
 # ================= Cart Views =================
 @login_required
 def cart_page(request):
@@ -42,9 +40,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            if user.is_staff:
-                return redirect("dashboard_home")
-            return redirect("shop")
+            return redirect("dashboard_home" if user.is_staff else "shop")
     else:
         form = AuthenticationForm()
     return render(request, "dashboard/login.html", {"form": form})
@@ -70,19 +66,15 @@ def signup_view(request):
 # ================= Shop Views =================
 @login_required
 def shop_view(request):
-    
     products = Product.objects.filter(stock__gt=0)
-
-    
     categories = Category.objects.all()  
 
-
-    selected_category = request.GET.get('category', 'all')
-    if selected_category != 'all':
+    # filters
+    selected_category = request.GET.get("category", "all")
+    if selected_category != "all":
         products = products.filter(category__name=selected_category)
 
-    
-    max_price = request.GET.get('max_price')
+    max_price = request.GET.get("max_price")
     if max_price:
         try:
             max_price = float(max_price)
@@ -90,28 +82,19 @@ def shop_view(request):
         except ValueError:
             max_price = None
 
-    
-    sort = request.GET.get('sort', 'name')
-    if sort == 'price-low':
-        products = products.order_by('price')
-    elif sort == 'price-high':
-        products = products.order_by('-price')
-    elif sort == 'newest':
-        products = products.order_by('-created_at')
+    sort = request.GET.get("sort", "name")
+    if sort == "price-low":
+        products = products.order_by("price")
+    elif sort == "price-high":
+        products = products.order_by("-price")
+    elif sort == "newest":
+        products = products.order_by("-created_at")
     else:
-        products = products.order_by('name')
+        products = products.order_by("name")
 
-    
+    # cart count
     cart, _ = Cart.objects.get_or_create(user=request.user)
     cart_items_count = cart.items.count()
-
-    context = {
-        "products": products,
-        "categories": categories,
-        "selected_category": selected_category,
-        "max_price": max_price or 10000,
-        "cart_items_count": cart_items_count,
-    }
 
     if request.method == "POST":
         product_id = request.POST.get("product_id")
@@ -121,24 +104,21 @@ def shop_view(request):
             messages.error(request, f"Only {product.stock} items available for {product.name}.")
             return redirect("shop")
         cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        if not created:
-            cart_item.quantity += quantity
-        else:
-            cart_item.quantity = quantity
+        cart_item.quantity = cart_item.quantity + quantity if not created else quantity
         cart_item.save()
         messages.success(request, f"🛒 Added {quantity} × {product.name} to your cart")
         return redirect("shop")
 
+    context = {
+        "products": products,
+        "categories": categories,
+        "selected_category": selected_category,
+        "max_price": max_price or 10000,
+        "cart_items_count": cart_items_count,
+    }
     return render(request, "dashboard/shop.html", context)
 
 # ================= Admin Dashboard =================
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import User
-from django.utils.timezone import now, timedelta
-from orders.models import Order
-from products.models import Product
-
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def admin_dashboard(request):
@@ -153,11 +133,10 @@ def admin_dashboard(request):
     elif period == "month":
         start_date = today.replace(day=1)
 
-    orders = Order.objects.all().order_by('-created_at')
+    orders = Order.objects.all().order_by("-created_at")
     if start_date:
         orders = orders.filter(created_at__date__gte=start_date)
 
-    
     total_sales = sum(
         sum(item.price * item.quantity for item in order.items.all())
         for order in orders
@@ -173,36 +152,29 @@ def admin_dashboard(request):
     }
     return render(request, "dashboard/admin_dashboard.html", context)
 
-
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def reports_view(request):
-    orders = Order.objects.all().order_by('-created_at')
+    orders = Order.objects.all().order_by("-created_at")
     total_sales = sum(
         sum(item.price * item.quantity for item in order.items.all())
         for order in orders
     )
-    context = {"orders": orders, "total_sales": total_sales}
-    return render(request, "dashboard/reports.html", context)
+    return render(request, "dashboard/reports.html", {"orders": orders, "total_sales": total_sales})
 
 # ================= Products CRUD =================
-
-
-
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def products_list(request):
-    products = Product.objects.all().select_related('category')
+    products = Product.objects.all().select_related("category")
     categories = Category.objects.all()
-
 
     in_stock = products.filter(stock__gt=10).count()
     low_stock = products.filter(stock__gt=0, stock__lte=10).count()
     out_of_stock = products.filter(stock=0).count()
 
-    # Pagination
-    paginator = Paginator(products, 5)  
-    page_number = request.GET.get('page')
+    paginator = Paginator(products, 5)
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     context = {
@@ -213,7 +185,6 @@ def products_list(request):
         "out_of_stock": out_of_stock,
     }
     return render(request, "dashboard/products.html", context)
-
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -227,7 +198,6 @@ def product_create(request):
     else:
         form = ProductForm()
     return render(request, "dashboard/product_form.html", {"form": form})
-
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -243,7 +213,6 @@ def product_update(request, pk):
         form = ProductForm(instance=product)
     return render(request, "dashboard/product_form.html", {"form": form})
 
-
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def product_delete(request, pk):
@@ -256,10 +225,22 @@ def product_delete(request, pk):
 @login_required
 def orders_list(request):
     if request.user.is_staff:
-        orders = Order.objects.all()
+        orders = Order.objects.all().order_by("-created_at")
     else:
-        orders = Order.objects.filter(user=request.user)
-    return render(request, "dashboard/orders.html", {"orders": orders})
+        orders = Order.objects.filter(user=request.user).order_by("-created_at")
+
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "orders": page_obj,
+        "total_orders": orders.count(),
+        "completed": orders.filter(status="Completed").count(),
+        "processing": orders.filter(status="Processing").count(),
+        "pending": orders.filter(status="Pending").count(),
+    }
+    return render(request, "dashboard/orders.html", context)
 
 @login_required
 def order_create(request):
@@ -302,6 +283,25 @@ def checkout(request):
     cart.items.all().delete()
     return redirect("orders_list")
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def export_orders_csv(request):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="orders.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["ID", "Customer", "Date", "Total", "Status"])
+
+    for order in Order.objects.all():
+        writer.writerow([
+            order.id,
+            order.user.username if order.user else "Guest",
+            order.created_at.strftime("%Y-%m-%d"),
+            order.total_price() if hasattr(order, "total_price") else sum(i.price * i.quantity for i in order.items.all()),
+            order.status,
+        ])
+    return response
+
 # ================= Users Management (Admin Only) =================
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -315,7 +315,7 @@ def user_update_role(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == "POST":
         role = request.POST.get("role")
-        user.is_staff = role == "admin"
+        user.is_staff = (role == "admin")
         user.save()
         messages.success(request, f"✅ Role for {user.username} updated successfully!")
         return redirect("users_list")

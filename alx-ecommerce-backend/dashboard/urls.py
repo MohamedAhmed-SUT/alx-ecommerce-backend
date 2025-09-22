@@ -16,6 +16,8 @@ urlpatterns = [
     path('orders/', views.orders_list, name="orders_list"),
     path('orders/create/', views.order_create, name="order_create"),
     path('orders/<int:pk>/update/', views.order_update, name="order_update"),
+    path("orders/export/", views.export_orders_csv, name="export_orders_csv"),
+
 
     # Users Management
     path('users/', views.users_list, name="users_list"),
