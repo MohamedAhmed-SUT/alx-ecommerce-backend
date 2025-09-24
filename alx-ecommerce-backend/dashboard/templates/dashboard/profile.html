@@ -1,0 +1,212 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-gradient-primary text-white py-3 rounded-top-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i class="fas fa-user me-2"></i>My Profile
+                    </h5>
+                    <a href="{% url 'settings' %}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card-body p-4">
+                <!-- User Summary -->
+                <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user text-primary fa-2x"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="mb-1 fw-bold text-dark">{{ user.username }}</h4>
+                        <p class="text-muted mb-1 fs-6">{{ user.email }}</p>
+                        {% if user.first_name or user.last_name %}
+                            <p class="text-muted mb-1 fs-6">{{ user.get_full_name }}</p>
+                        {% endif %}
+                        {% if user.date_joined %}
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                Member since {{ user.date_joined|date:"M d, Y" }}
+                            </small>
+                        {% endif %}
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="badge {% if user.is_staff %}bg-success{% else %}bg-info{% endif %} fs-6 px-4 py-2 rounded-pill">
+                            {% if user.is_staff %}Admin{% else %}User{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Profile Details -->
+                <div class="mb-4">
+                    <h6 class="section-title fw-semibold text-dark mb-3">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>Profile Details
+                    </h6>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label fw-medium text-muted">Email</label>
+                                <div class="info-value fs-5">
+                                    <i class="fas fa-envelope text-primary me-2"></i>
+                                    {{ user.email|default:"Not provided" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label fw-medium text-muted">Full Name</label>
+                                <div class="info-value fs-5">
+                                    <i class="fas fa-user text-primary me-2"></i>
+                                    {{ user.get_full_name|default:"Not provided" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label fw-medium text-muted">Role</label>
+                                <div class="info-value fs-5">
+                                    <i class="fas fa-user-tag text-primary me-2"></i>
+                                    {% if user.is_staff %}Administrator{% else %}Standard User{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="info-label fw-medium text-muted">Last Login</label>
+                                <div class="info-value fs-5">
+                                    <i class="fas fa-clock text-primary me-2"></i>
+                                    {% if user.last_login %}
+                                        {{ user.last_login|date:"M d, Y g:i A" }}
+                                    {% else %}
+                                        Never logged in
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3 justify-content-between">
+                    <a href="{% url 'settings' %}" class="btn btn-primary rounded-pill px-4 py-2">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </a>
+                    <a href="{% url 'shop' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                        <i class="fas fa-shopping-bag me-2"></i>Back to Shop
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* General Styling */
+body {
+    background-color: #f4f6f9;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Card Styling */
+.card {
+    border-radius: 16px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header.bg-gradient-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    border-radius: 16px 16px 0 0;
+}
+
+.card-header h5 {
+    color: #fff;
+}
+
+/* Button Styling */
+.btn {
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6b7280;
+    color: #6b7280;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6b7280;
+    border-color: #6b7280;
+    color: #fff;
+}
+
+/* Info Items */
+.info-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+}
+
+/* Section Title */
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+}
+
+/* Badge Styling */
+.badge {
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+}
+
+/* Custom Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+</style>
+{% endblock %}

@@ -24,6 +24,9 @@ urlpatterns = [
     path('users/', views.users_list, name="users_list"),
     path('users/<int:pk>/role/', views.user_update_role, name="user_update_role"),
     path('users/<int:pk>/delete/', views.user_delete, name="user_delete"),
+    path('users/', views.users_list, name='users_list'),
+    path('users/<int:pk>/update-role/', views.user_update_role, name='user_update_role'),
+    path('users/<int:pk>/delete/', views.user_delete, name='user_delete'),
     # Auth
     path('login/', views.login_view, name="login"),
     path('logout/', views.logout_view, name="logout"),
@@ -36,6 +39,12 @@ urlpatterns = [
     path("cart/", views.cart_page, name="cart_page"),
     path("cart/remove/<int:item_id>/", views.remove_from_cart, name="remove_from_cart"),
     path("cart/checkout/", views.checkout, name="checkout"),
-    path('cart/clear/', views.clear_cart, name='clear_cart')
+    path('cart/clear/', views.clear_cart, name='clear_cart'),
+
+    path('', views.admin_dashboard, name='dashboard_home'),
+    path('profile/', views.profile, name='profile'),
+    path('settings/', views.settings, name='settings'),
+    path('password/change/', views.password_change, name='password_change'),
+    path('user/delete/<int:pk>/', views.user_delete, name='user_delete'),
     
 ]

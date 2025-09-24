@@ -391,11 +391,11 @@ def user_update_role(request, pk):
 def user_delete(request, pk):
     user = get_object_or_404(User, pk=pk)
     if request.method == "POST":
+        if request.user.id == user.id:
+            return JsonResponse({"error": "Cannot delete your own account"}, status=400)
         user.delete()
-        messages.success(request, "🗑️ User deleted successfully!")
         return redirect("users_list")
-    return render(request, "dashboard/user_confirm_delete.html", {"user": user})
-
+    return JsonResponse({"error": "Method not allowed"}, status=405)
 
 # ================= Orders Management (Admin Only) =================
 @login_required
@@ -407,3 +407,47 @@ def order_delete(request, pk):
         messages.success(request, "🗑️ Order deleted successfully!")
         return redirect("orders_list")
     return render(request, "dashboard/order_confirm_delete.html", {"order": order})
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.models import User
+from .forms import UserUpdateForm, CustomPasswordChangeForm
+
+@login_required
+def profile(request):
+    return render(request, 'dashboard/profile.html', {'user': request.user})
+
+@login_required
+def settings(request):
+    if request.method == 'POST':
+        form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = UserUpdateForm(instance=request.user)
+    password_form = CustomPasswordChangeForm(user=request.user)
+    return render(request, 'dashboard/settings.html', {'form': form, 'password_form': password_form})
+
+@login_required
+def password_change(request):
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)  # Keep user logged in
+            return redirect('profile')
+    else:
+        form = CustomPasswordChangeForm(user=request.user)
+    return render(request, 'dashboard/settings.html', {'form': UserUpdateForm(instance=request.user), 'password_form': form})
+
+@login_required
+def user_delete(request, pk):
+    if request.method == 'POST':
+        user = get_object_or_404(User, pk=pk)
+        if user.id == request.user.id:  # Ensure user can delete their own account
+            user.delete()
+            return redirect('login')
+    return redirect('settings')

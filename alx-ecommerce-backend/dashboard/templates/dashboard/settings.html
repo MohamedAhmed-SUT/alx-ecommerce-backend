@@ -1,0 +1,365 @@
+{% extends "dashboard/base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-gradient-primary text-white py-3 rounded-top-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i class="fas fa-cog me-2"></i>Account Settings
+                    </h5>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                        <i class="fas fa-user me-2"></i>Back to Profile
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card-body p-4">
+                <!-- Settings Form -->
+                <form method="POST" id="settingsForm">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger rounded-3 shadow-sm">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <h6 class="section-title fw-semibold text-dark mb-3">
+                            <i class="fas fa-user-edit me-2 text-primary"></i>Update Personal Information
+                        </h6>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.username.id_for_label }}" class="form-label fw-medium">Username *</label>
+                                {{ form.username|add_class:"form-control rounded-pill shadow-sm" }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.username.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.email.id_for_label }}" class="form-label fw-medium">Email *</label>
+                                {{ form.email|add_class:"form-control rounded-pill shadow-sm" }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label fw-medium">First Name</label>
+                                {{ form.first_name|add_class:"form-control rounded-pill shadow-sm" }}
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label fw-medium">Last Name</label>
+                                {{ form.last_name|add_class:"form-control rounded-pill shadow-sm" }}
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 justify-content-between pt-3 border-top">
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                        <a href="{% url 'profile' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Password Change and Delete Account -->
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="section-title fw-semibold text-dark mb-3">
+                        <i class="fas fa-lock me-2 text-primary"></i>Account Actions
+                    </h6>
+                    <div class="d-flex gap-3 justify-content-between">
+                        <button class="btn btn-outline-primary rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#passwordChangeModal">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </button>
+                        <form method="post" action="{% url 'user_delete' user.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4 py-2">
+                                <i class="fas fa-trash me-2"></i>Delete Account
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Password Change Modal -->
+<div class="modal fade" id="passwordChangeModal" tabindex="-1" aria-labelledby="passwordChangeModalLabel" aria-hidden="true" data-bs-backdrop="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4">
+            <div class="modal-header bg-gradient-primary text-white rounded-top-4">
+                <h5 class="modal-title" id="passwordChangeModalLabel">
+                    <i class="fas fa-key me-2"></i>Change Password
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form method="POST" action="{% url 'password_change' %}" id="passwordChangeForm">
+                    {% csrf_token %}
+                    
+                    {% if password_form.non_field_errors %}
+                    <div class="alert alert-danger rounded-3 shadow-sm">
+                        {% for error in password_form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ password_form.old_password.id_for_label }}" class="form-label fw-medium">Current Password *</label>
+                        {{ password_form.old_password|add_class:"form-control rounded-pill shadow-sm" }}
+                        {% if password_form.old_password.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in password_form.old_password.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ password_form.new_password1.id_for_label }}" class="form-label fw-medium">New Password *</label>
+                        {{ password_form.new_password1|add_class:"form-control rounded-pill shadow-sm" }}
+                        {% if password_form.new_password1.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in password_form.new_password1.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ password_form.new_password2.id_for_label }}" class="form-label fw-medium">Confirm New Password *</label>
+                        {{ password_form.new_password2|add_class:"form-control rounded-pill shadow-sm" }}
+                        {% if password_form.new_password2.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in password_form.new_password2.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-3 justify-content-end">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">
+                            <i class="fas fa-save me-2"></i>Change Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* General Styling */
+body {
+    background-color: #f4f6f9;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Card Styling */
+.card {
+    border-radius: 16px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header.bg-gradient-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+    border-radius: 16px 16px 0 0;
+}
+
+.card-header h5 {
+    color: #fff;
+}
+
+/* Button Styling */
+.btn {
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6b7280;
+    color: #6b7280;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6b7280;
+    border-color: #6b7280;
+    color: #fff;
+}
+
+.btn-outline-danger {
+    border: 2px solid #ef4444;
+    color: #ef4444;
+}
+
+.btn-outline-danger:hover {
+    background-color: #ef4444;
+    border-color: #ef4444;
+    color: #fff;
+}
+
+/* Form Styling */
+.form-control {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1.25rem;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+/* Modal Styling */
+.modal-content {
+    border-radius: 16px;
+}
+
+.modal-header {
+    border-radius: 16px 16px 0 0;
+}
+
+.btn-close-white {
+    filter: invert(1);
+}
+
+/* Section Title */
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+}
+
+/* Alert Styling */
+.alert {
+    border-radius: 12px;
+    border: none;
+    padding: 1.25rem;
+}
+
+.invalid-feedback {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+}
+
+/* Custom Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const settingsForm = document.getElementById('settingsForm');
+    const passwordChangeForm = document.getElementById('passwordChangeForm');
+
+    // Form validation for settings
+    settingsForm.addEventListener('submit', function(e) {
+        let isValid = true;
+        const requiredFields = settingsForm.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            const firstError = settingsForm.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+    });
+
+    // Form validation for password change
+    passwordChangeForm.addEventListener('submit', function(e) {
+        let isValid = true;
+        const requiredFields = passwordChangeForm.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            const firstError = passwordChangeForm.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

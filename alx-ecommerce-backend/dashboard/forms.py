@@ -38,3 +38,30 @@ class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = ["status"]
+
+from django import forms
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import User
+
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+        widgets = {
+            'username': forms.TextInput(attrs={'required': True}),
+            'email': forms.EmailInput(attrs={'required': True}),
+            'first_name': forms.TextInput(),
+            'last_name': forms.TextInput(),
+        }
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    class Meta:
+        model = User
+        fields = ['old_password', 'new_password1', 'new_password2']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Customize form field attributes if needed
+        self.fields['old_password'].widget.attrs.update({'class': 'form-control rounded-pill shadow-sm', 'required': True})
+        self.fields['new_password1'].widget.attrs.update({'class': 'form-control rounded-pill shadow-sm', 'required': True})
+        self.fields['new_password2'].widget.attrs.update({'class': 'form-control rounded-pill shadow-sm', 'required': True})
