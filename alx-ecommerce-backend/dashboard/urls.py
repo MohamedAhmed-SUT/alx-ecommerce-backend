@@ -19,7 +19,7 @@ urlpatterns = [
     path("orders/export/", views.export_orders_csv, name="export_orders_csv"),
     path("bulk/update/", views.bulk_update_orders, name="bulk_update_orders"),
     path("bulk/delete/", views.bulk_delete_orders, name="bulk_delete_orders"),
-
+    path("orders/<int:pk>/delete/", views.order_delete, name="order_delete"),
     # Users Management
     path('users/', views.users_list, name="users_list"),
     path('users/<int:pk>/role/', views.user_update_role, name="user_update_role"),

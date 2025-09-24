@@ -308,7 +308,7 @@ def order_create(request):
             return redirect("orders_list")
     else:
         form = OrderForm()
-    return render(request, "dashboard/order_form.html", {"form": form})
+    return render(request, "dashboard/order_update.html", {"form": form})
 
 
 @login_required
@@ -319,11 +319,14 @@ def order_update(request, pk):
         form = OrderForm(request.POST, instance=order)
         if form.is_valid():
             form.save()
-            messages.success(request, "✅ Order updated successfully!")
             return redirect("orders_list")
     else:
         form = OrderForm(instance=order)
-    return render(request, "dashboard/order_form.html", {"form": form})
+
+    return render(request, "dashboard/order_update.html", {
+        "order": order,
+        "form": form,
+    })
 
 
 @login_required
@@ -356,7 +359,7 @@ def export_orders_csv(request):
             order.id,
             order.user.username if order.user else "Guest",
             order.created_at.strftime("%Y-%m-%d"),
-            order.total_price() if hasattr(order, "total_price") else sum(i.price * i.quantity for i in order.items.all()),
+            order.total_price if hasattr(order, "total_price") else sum(i.price * i.quantity for i in order.items.all()),
             order.status,
         ])
     return response
@@ -392,3 +395,15 @@ def user_delete(request, pk):
         messages.success(request, "🗑️ User deleted successfully!")
         return redirect("users_list")
     return render(request, "dashboard/user_confirm_delete.html", {"user": user})
+
+
+# ================= Orders Management (Admin Only) =================
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def order_delete(request, pk):
+    order = get_object_or_404(Order, pk=pk)
+    if request.method == "POST":
+        order.delete()
+        messages.success(request, "🗑️ Order deleted successfully!")
+        return redirect("orders_list")
+    return render(request, "dashboard/order_confirm_delete.html", {"order": order})

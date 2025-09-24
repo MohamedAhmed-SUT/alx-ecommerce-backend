@@ -7,9 +7,6 @@
         <p class="text-muted mb-0">View and manage all customer orders</p>
     </div>
     <div>
-        <button class="btn btn-primary" onclick="window.location.href='{% url 'order_create' %}'">
-            <i class="fas fa-plus me-1"></i> New Order
-        </button>
         <button class="btn btn-outline-secondary ms-2" onclick="window.location.href='{% url 'export_orders_csv' %}'">
             <i class="fas fa-download me-1"></i> Export
         </button>
@@ -98,29 +95,11 @@
 <div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="fas fa-list me-2"></i>Orders</h5>
-        <div>
-            <div class="form-check form-switch d-inline-block me-3">
-                <input class="form-check-input" type="checkbox" id="autoRefresh">
-                <label class="form-check-label" for="autoRefresh">Auto Refresh</label>
-            </div>
-            <div class="dropdown d-inline-block" id="bulkActionsDropdown" style="display:none;">
-                <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
-                    Bulk Actions
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" id="bulkMarkCompleted">Mark Completed</a></li>
-                    <li><a class="dropdown-item" href="#" id="bulkMarkProcessing">Mark Processing</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#" id="bulkDelete">Delete Selected</a></li>
-                </ul>
-            </div>
-        </div>
     </div>
     <div class="table-responsive">
         <table class="table table-hover mb-0" id="ordersTable">
             <thead class="table-light">
                 <tr>
-                    <th><input type="checkbox" id="selectAll"></th>
                     <th>ID</th>
                     <th>Customer</th>
                     <th>Date</th>
@@ -132,7 +111,6 @@
             <tbody>
                 {% for order in orders %}
                 <tr data-order-id="{{ order.id }}">
-                    <td><input type="checkbox" class="order-checkbox" data-id="{{ order.id }}"></td>
                     <td class="fw-bold">#ORD-{{ order.id }}</td>
                     <td>{{ order.user.username }}</td>
                     <td>{{ order.created_at|date:"M d, Y" }}</td>
@@ -155,7 +133,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="text-center text-muted py-4">No orders found.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-4">No orders found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -179,7 +157,7 @@
         {% if orders.has_next %}
         <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}">&raquo;</a></li>
         {% endif %}
-    </ul>
+    </ personally>
 </div>
 {% endif %}
 
@@ -199,24 +177,10 @@
         <p><strong>Total:</strong> $<span id="modalAmount"></span></p>
         <div id="orderItems"></div>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title text-danger">Confirm Delete</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p>Are you sure you want to delete order #ORD-<span id="deleteOrderId"></span>?</p>
-      </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+        <a class="btn btn-sm btn-primary" id="modalEditButton" href="#">Edit</a>
+        <button class="btn btn-sm btn-danger" id="modalDeleteButton">Delete</button>
+        <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -225,49 +189,49 @@
 <!-- Scripts -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // ================= Select All =================
-    const selectAll = document.getElementById("selectAll");
-    const checkboxes = document.querySelectorAll(".order-checkbox");
-    selectAll.addEventListener("change", () => {
-        checkboxes.forEach(cb => cb.checked = selectAll.checked);
-        toggleBulkActions();
-    });
-    checkboxes.forEach(cb => cb.addEventListener("change", toggleBulkActions));
-
-    function toggleBulkActions() {
-        const anyChecked = [...checkboxes].some(cb => cb.checked);
-        document.getElementById("bulkActionsDropdown").style.display = anyChecked ? "inline-block" : "none";
-    }
-
     // ================= Delete =================
     let deleteId = null;
     document.querySelectorAll(".delete-btn").forEach(btn => {
         btn.addEventListener("click", function() {
             deleteId = this.dataset.orderId;
-            document.getElementById("deleteOrderId").textContent = deleteId;
-            new bootstrap.Modal(document.getElementById("deleteConfirmModal")).show();
+            fetch(`/dashboard/orders/${deleteId}/delete/`, {
+                method: "POST",
+                headers: {"X-CSRFToken": "{{ csrf_token }}"}
+            }).then(() => location.reload());
         });
     });
-    document.getElementById("confirmDeleteBtn").addEventListener("click", function() {
-        if (deleteId) {
-            fetch(`/orders/${deleteId}/delete/`, {
+
+    // ================= View Details =================
+    const modalEditButton = document.getElementById("modalEditButton");
+    const modalDeleteButton = document.getElementById("modalDeleteButton");
+    let currentOrderId = null;
+
+    document.querySelectorAll(".view-details-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const tr = this.closest("tr");
+            currentOrderId = tr.dataset.orderId;
+
+            document.getElementById("modalOrderId").textContent = currentOrderId;
+            document.getElementById("modalCustomer").textContent = tr.children[1].innerText;
+            document.getElementById("modalDate").textContent = tr.children[2].innerText;
+            document.getElementById("modalAmount").textContent = tr.children[3].innerText.replace("$", "");
+            document.getElementById("modalStatus").textContent = tr.children[4].innerText.trim();
+            document.getElementById("modalStatus").className = "badge " + tr.children[4].querySelector(".badge").className.split(" ").filter(c => c.startsWith("bg-")).join(" ");
+
+            // Set the Edit button URL dynamically using Django's URL pattern
+            modalEditButton.href = "{% url 'order_update' 0 %}".replace("0", currentOrderId);
+
+            new bootstrap.Modal(document.getElementById("orderDetailsModal")).show();
+        });
+    });
+
+    modalDeleteButton.addEventListener("click", function() {
+        if (currentOrderId) {
+            fetch(`/dashboard/orders/${currentOrderId}/delete/`, {
                 method: "POST",
                 headers: {"X-CSRFToken": "{{ csrf_token }}"}
             }).then(() => location.reload());
         }
-    });
-
-    // ================= View Details =================
-    document.querySelectorAll(".view-details-btn").forEach(btn => {
-        btn.addEventListener("click", function() {
-            const tr = this.closest("tr");
-            document.getElementById("modalOrderId").textContent = tr.dataset.orderId;
-            document.getElementById("modalCustomer").textContent = tr.children[2].innerText;
-            document.getElementById("modalDate").textContent = tr.children[3].innerText;
-            document.getElementById("modalAmount").textContent = tr.children[4].innerText.replace("$","");
-            document.getElementById("modalStatus").textContent = tr.children[5].innerText.trim();
-            new bootstrap.Modal(document.getElementById("orderDetailsModal")).show();
-        });
     });
 
     // ================= Filters =================
@@ -282,10 +246,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const dateValue = dateFilter.value;
 
         tableRows.forEach(row => {
-            const id = row.children[1].innerText.toLowerCase();
-            const customer = row.children[2].innerText.toLowerCase();
-            const date = row.children[3].innerText;
-            const status = row.children[5].innerText.toLowerCase();
+            const id = row.children[0].innerText.toLowerCase();
+            const customer = row.children[1].innerText.toLowerCase();
+            const date = row.children[2].innerText;
+            const status = row.children[4].innerText.toLowerCase();
 
             let visible = true;
 
@@ -319,44 +283,6 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("clearSearch").addEventListener("click", () => {
         searchInput.value = "";
         filterTable();
-    });
-
-    // ================= Bulk Actions =================
-    function getSelectedIds() {
-        return [...document.querySelectorAll(".order-checkbox:checked")].map(cb => cb.dataset.id);
-    }
-
-    document.getElementById("bulkMarkCompleted").addEventListener("click", function() {
-        const ids = getSelectedIds();
-        if (ids.length) {
-            fetch("/orders/bulk/update/", {
-                method: "POST",
-                headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
-                body: JSON.stringify({ids: ids, status: "Completed"})
-            }).then(() => location.reload());
-        }
-    });
-
-    document.getElementById("bulkMarkProcessing").addEventListener("click", function() {
-        const ids = getSelectedIds();
-        if (ids.length) {
-            fetch("/orders/bulk/update/", {
-                method: "POST",
-                headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
-                body: JSON.stringify({ids: ids, status: "Processing"})
-            }).then(() => location.reload());
-        }
-    });
-
-    document.getElementById("bulkDelete").addEventListener("click", function() {
-        const ids = getSelectedIds();
-        if (ids.length && confirm("Delete selected orders?")) {
-            fetch("/orders/bulk/delete/", {
-                method: "POST",
-                headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
-                body: JSON.stringify({ids: ids})
-            }).then(() => location.reload());
-        }
     });
 });
 </script>
